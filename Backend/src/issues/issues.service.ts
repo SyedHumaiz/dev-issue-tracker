@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
@@ -12,7 +12,16 @@ import { ActivityType } from '@prisma/client';
 export class IssuesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateIssueDto) {
+  private async requireProjectMember(projectId: string, userId: string): Promise<void> {
+    const membership = await this.prisma.projectMember.findUnique({
+      where: { userId_projectId: { userId, projectId } },
+    });
+    if (!membership) {
+      throw new ForbiddenException('You are not a member of this project');
+    }
+  }
+
+  async create(dto: CreateIssueDto, reporterId: string) {
     const project = await this.prisma.project.findUnique({
       where: { id: dto.projectId },
     });
@@ -21,11 +30,13 @@ export class IssuesService {
     }
 
     const reporter = await this.prisma.user.findUnique({
-      where: { id: dto.reporterId },
+      where: { id: reporterId },
     });
     if (!reporter) {
-      throw new NotFoundException(`Reporter user with ID ${dto.reporterId} not found`);
+      throw new NotFoundException(`Reporter user with ID ${reporterId} not found`);
     }
+
+    await this.requireProjectMember(dto.projectId, reporterId);
 
     if (dto.assigneeId) {
       const assignee = await this.prisma.user.findUnique({
@@ -43,7 +54,7 @@ export class IssuesService {
         status: dto.status,
         priority: dto.priority,
         projectId: dto.projectId,
-        reporterId: dto.reporterId,
+        reporterId,
         assigneeId: dto.assigneeId,
       },
       include: {
@@ -58,7 +69,7 @@ export class IssuesService {
       data: {
         type: ActivityType.ISSUE_CREATED,
         issueId: issue.id,
-        actorId: dto.reporterId,
+        actorId: reporterId,
         meta: {
           title: issue.title,
           status: issue.status,
@@ -119,14 +130,14 @@ export class IssuesService {
     return issue;
   }
 
-  async update(id: string, dto: UpdateIssueDto) {
+  async update(id: string, dto: UpdateIssueDto, actorId: string) {
     const existing = await this.findOne(id);
 
     const actor = await this.prisma.user.findUnique({
-      where: { id: dto.actorId },
+      where: { id: actorId },
     });
     if (!actor) {
-      throw new NotFoundException(`Actor user with ID ${dto.actorId} not found`);
+      throw new NotFoundException(`Actor user with ID ${actorId} not found`);
     }
 
     if (dto.assigneeId) {
@@ -161,7 +172,7 @@ export class IssuesService {
         data: {
           type: ActivityType.STATUS_CHANGED,
           issueId: id,
-          actorId: dto.actorId,
+          actorId,
           meta: { before: existing.status, after: dto.status },
         },
       });
@@ -172,7 +183,7 @@ export class IssuesService {
         data: {
           type: ActivityType.PRIORITY_CHANGED,
           issueId: id,
-          actorId: dto.actorId,
+          actorId,
           meta: { before: existing.priority, after: dto.priority },
         },
       });
@@ -183,7 +194,7 @@ export class IssuesService {
         data: {
           type: ActivityType.ASSIGNEE_CHANGED,
           issueId: id,
-          actorId: dto.actorId,
+          actorId,
           meta: { before: existing.assigneeId, after: dto.assigneeId },
         },
       });
@@ -192,15 +203,15 @@ export class IssuesService {
     return updatedIssue;
   }
 
-  async updateStatus(id: string, dto: UpdateStatusDto) {
-    return this.update(id, dto);
+  async updateStatus(id: string, dto: UpdateStatusDto, actorId: string) {
+    return this.update(id, dto, actorId);
   }
 
-  async updatePriority(id: string, dto: UpdatePriorityDto) {
-    return this.update(id, dto);
+  async updatePriority(id: string, dto: UpdatePriorityDto, actorId: string) {
+    return this.update(id, dto, actorId);
   }
 
-  async updateAssignee(id: string, dto: UpdateAssigneeDto) {
-    return this.update(id, dto);
+  async updateAssignee(id: string, dto: UpdateAssigneeDto, actorId: string) {
+    return this.update(id, dto, actorId);
   }
 }

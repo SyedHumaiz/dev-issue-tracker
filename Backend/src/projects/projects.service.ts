@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
@@ -9,22 +14,34 @@ import { Role } from '@prisma/client';
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateProjectDto) {
+  // Throws 403 if the user is not an OWNER of the project
+  private async requireOwner(projectId: string, actorId: string): Promise<void> {
+    const membership = await this.prisma.projectMember.findUnique({
+      where: { userId_projectId: { userId: actorId, projectId } },
+    });
+    if (!membership) {
+      throw new ForbiddenException('You are not a member of this project');
+    }
+    if (membership.role !== Role.OWNER) {
+      throw new ForbiddenException('Only project owners can perform this action');
+    }
+  }
+
+  async create(dto: CreateProjectDto, ownerId: string) {
     const project = await this.prisma.project.create({
       data: {
         name: dto.name,
       },
     });
 
-    if (dto.ownerId) {
-      await this.prisma.projectMember.create({
-        data: {
-          projectId: project.id,
-          userId: dto.ownerId,
-          role: Role.OWNER,
-        },
-      });
-    }
+    // The authenticated user automatically becomes OWNER
+    await this.prisma.projectMember.create({
+      data: {
+        projectId: project.id,
+        userId: ownerId,
+        role: Role.OWNER,
+      },
+    });
 
     return this.findOne(project.id);
   }
@@ -92,8 +109,11 @@ export class ProjectsService {
     return project;
   }
 
-  async addMember(projectId: string, dto: AddMemberDto) {
+  async addMember(projectId: string, dto: AddMemberDto, actorId: string) {
     await this.findOne(projectId);
+
+    // Only OWNERs can add members
+    await this.requireOwner(projectId, actorId);
 
     const existingMember = await this.prisma.projectMember.findUnique({
       where: {
@@ -127,7 +147,17 @@ export class ProjectsService {
     });
   }
 
-  async updateMemberRole(projectId: string, userId: string, dto: UpdateMemberRoleDto) {
+  async updateMemberRole(
+    projectId: string,
+    userId: string,
+    dto: UpdateMemberRoleDto,
+    actorId: string,
+  ) {
+    await this.findOne(projectId);
+
+    // Only OWNERs can change member roles
+    await this.requireOwner(projectId, actorId);
+
     const member = await this.prisma.projectMember.findUnique({
       where: {
         userId_projectId: {
@@ -157,7 +187,12 @@ export class ProjectsService {
     });
   }
 
-  async removeMember(projectId: string, userId: string) {
+  async removeMember(projectId: string, userId: string, actorId: string) {
+    await this.findOne(projectId);
+
+    // Only OWNERs can remove members
+    await this.requireOwner(projectId, actorId);
+
     const member = await this.prisma.projectMember.findUnique({
       where: {
         userId_projectId: {

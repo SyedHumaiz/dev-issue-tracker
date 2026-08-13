@@ -5,11 +5,13 @@ import { ProjectsModule } from './projects/projects.module';
 import { IssuesModule } from './issues/issues.module';
 import { CommentsModule } from './comments/comments.module';
 import { ActivityModule } from './activity/activity.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     PrismaModule,
     UsersModule,
+    AuthModule,
     ProjectsModule,
     IssuesModule,
     CommentsModule,

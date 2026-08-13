@@ -53,4 +53,10 @@ export class UsersService {
     }
     return user;
   }
+
+  // Used internally by AuthService for login — returns password field for bcrypt comparison
+  async findByEmail(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
 }
+

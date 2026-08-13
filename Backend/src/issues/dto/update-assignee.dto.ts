@@ -1,12 +1,9 @@
-import { IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class UpdateAssigneeDto {
   @IsString()
   @IsOptional()
   @ValidateIf((object, value) => value !== null)
   assigneeId?: string | null;
-
-  @IsString()
-  @IsNotEmpty()
-  actorId: string;
 }
+

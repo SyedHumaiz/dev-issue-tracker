@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { IssueStatus, Priority } from '@prisma/client';
 
 export class UpdateIssueDto {
@@ -22,8 +22,5 @@ export class UpdateIssueDto {
   @IsOptional()
   @ValidateIf((object, value) => value !== null)
   assigneeId?: string | null;
-
-  @IsString()
-  @IsNotEmpty()
-  actorId: string;
 }
+

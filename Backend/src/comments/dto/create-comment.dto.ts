@@ -4,8 +4,5 @@ export class CreateCommentDto {
   @IsString()
   @IsNotEmpty()
   body: string;
-
-  @IsString()
-  @IsNotEmpty()
-  authorId: string;
 }
+

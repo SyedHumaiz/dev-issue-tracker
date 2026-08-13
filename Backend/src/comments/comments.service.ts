@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ActivityType } from '@prisma/client';
@@ -7,7 +7,16 @@ import { ActivityType } from '@prisma/client';
 export class CommentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(issueId: string, dto: CreateCommentDto) {
+  private async requireProjectMember(projectId: string, userId: string): Promise<void> {
+    const membership = await this.prisma.projectMember.findUnique({
+      where: { userId_projectId: { userId, projectId } },
+    });
+    if (!membership) {
+      throw new ForbiddenException('You are not a member of this project');
+    }
+  }
+
+  async create(issueId: string, dto: CreateCommentDto, authorId: string) {
     const issue = await this.prisma.issue.findUnique({
       where: { id: issueId },
     });
@@ -16,17 +25,20 @@ export class CommentsService {
     }
 
     const author = await this.prisma.user.findUnique({
-      where: { id: dto.authorId },
+      where: { id: authorId },
     });
     if (!author) {
-      throw new NotFoundException(`Author user with ID ${dto.authorId} not found`);
+      throw new NotFoundException(`Author user with ID ${authorId} not found`);
     }
 
+    await this.requireProjectMember(issue.projectId, authorId);
+
     const comment = await this.prisma.comment.create({
+
       data: {
         body: dto.body,
         issueId,
-        authorId: dto.authorId,
+        authorId,
       },
       include: {
         author: {
@@ -44,7 +56,7 @@ export class CommentsService {
       data: {
         type: ActivityType.COMMENT_ADDED,
         issueId,
-        actorId: dto.authorId,
+        actorId: authorId,
         meta: {
           commentId: comment.id,
           snippet: dto.body.length > 50 ? dto.body.substring(0, 50) + '...' : dto.body,

@@ -23,11 +23,8 @@ export class CreateIssueDto {
   projectId: string;
 
   @IsString()
-  @IsNotEmpty()
-  reporterId: string;
-
-  @IsString()
   @IsOptional()
   @ValidateIf((object, value) => value !== null)
   assigneeId?: string | null;
 }
+
