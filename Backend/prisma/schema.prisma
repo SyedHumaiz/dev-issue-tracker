@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MEMBER
+}
+
+enum IssueStatus {
+  OPEN
+  IN_REVIEW
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ActivityType {
+  ISSUE_CREATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  ASSIGNEE_CHANGED
+  COMMENT_ADDED
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  password       String
+  name           String
+  avatarUrl      String?
+  createdAt      DateTime        @default(now())
+  memberships    ProjectMember[]
+  reportedIssues Issue[]         @relation("Reporter")
+  assignedIssues Issue[]         @relation("Assignee")
+  comments       Comment[]
+  activities     Activity[]
+}
+
+model Project {
+  id        String          @id @default(cuid())
+  name      String
+  createdAt DateTime        @default(now())
+  members   ProjectMember[]
+  issues    Issue[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  role      Role     @default(MEMBER)
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model Issue {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  status      IssueStatus @default(OPEN)
+  priority    Priority    @default(MEDIUM)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  projectId   String
+  project     Project     @relation(fields: [projectId], references: [id])
+  reporterId  String
+  reporter    User        @relation("Reporter", fields: [reporterId], references: [id])
+  assigneeId  String?
+  assignee    User?       @relation("Assignee", fields: [assigneeId], references: [id])
+  comments    Comment[]
+  activities  Activity[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  type      ActivityType
+  meta      Json
+  createdAt DateTime     @default(now())
+  issueId   String
+  issue     Issue        @relation(fields: [issueId], references: [id])
+  actorId   String
+  actor     User         @relation(fields: [actorId], references: [id])
+}

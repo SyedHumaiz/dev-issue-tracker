@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build & Dist outputs
+dist/
+build/
+web-build/
+*.tsbuildinfo
+
+# Environment & local secrets
+.env
+.env*.local
+
+# Expo & Mobile
+.expo/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+/ios
+/android
+
+# IDE & OS
+.DS_Store
+.vscode/
+.claude/
+*.pem
+npm-debug.*
+yarn-debug.*
+yarn-error.*

@@ -1,0 +1,206 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateIssueDto } from './dto/create-issue.dto';
+import { UpdateIssueDto } from './dto/update-issue.dto';
+import { FilterIssueDto } from './dto/filter-issue.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { UpdatePriorityDto } from './dto/update-priority.dto';
+import { UpdateAssigneeDto } from './dto/update-assignee.dto';
+import { ActivityType } from '@prisma/client';
+
+@Injectable()
+export class IssuesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(dto: CreateIssueDto) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: dto.projectId },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${dto.projectId} not found`);
+    }
+
+    const reporter = await this.prisma.user.findUnique({
+      where: { id: dto.reporterId },
+    });
+    if (!reporter) {
+      throw new NotFoundException(`Reporter user with ID ${dto.reporterId} not found`);
+    }
+
+    if (dto.assigneeId) {
+      const assignee = await this.prisma.user.findUnique({
+        where: { id: dto.assigneeId },
+      });
+      if (!assignee) {
+        throw new NotFoundException(`Assignee user with ID ${dto.assigneeId} not found`);
+      }
+    }
+
+    const issue = await this.prisma.issue.create({
+      data: {
+        title: dto.title,
+        description: dto.description,
+        status: dto.status,
+        priority: dto.priority,
+        projectId: dto.projectId,
+        reporterId: dto.reporterId,
+        assigneeId: dto.assigneeId,
+      },
+      include: {
+        project: { select: { id: true, name: true } },
+        reporter: { select: { id: true, name: true, avatarUrl: true } },
+        assignee: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    // Record ISSUE_CREATED activity
+    await this.prisma.activity.create({
+      data: {
+        type: ActivityType.ISSUE_CREATED,
+        issueId: issue.id,
+        actorId: dto.reporterId,
+        meta: {
+          title: issue.title,
+          status: issue.status,
+          priority: issue.priority,
+        },
+      },
+    });
+
+    return issue;
+  }
+
+  async findAll(filter: FilterIssueDto) {
+    const where: any = {};
+    if (filter.projectId) where.projectId = filter.projectId;
+    if (filter.status) where.status = filter.status;
+    if (filter.priority) where.priority = filter.priority;
+    if (filter.assigneeId) where.assigneeId = filter.assigneeId;
+    if (filter.reporterId) where.reporterId = filter.reporterId;
+
+    return this.prisma.issue.findMany({
+      where,
+      include: {
+        project: { select: { id: true, name: true } },
+        reporter: { select: { id: true, name: true, avatarUrl: true } },
+        assignee: { select: { id: true, name: true, avatarUrl: true } },
+        _count: { select: { comments: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(id: string) {
+    const issue = await this.prisma.issue.findUnique({
+      where: { id },
+      include: {
+        project: { select: { id: true, name: true } },
+        reporter: { select: { id: true, name: true, avatarUrl: true } },
+        assignee: { select: { id: true, name: true, avatarUrl: true } },
+        comments: {
+          include: {
+            author: { select: { id: true, name: true, avatarUrl: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        activities: {
+          include: {
+            actor: { select: { id: true, name: true, avatarUrl: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    if (!issue) {
+      throw new NotFoundException(`Issue with ID ${id} not found`);
+    }
+
+    return issue;
+  }
+
+  async update(id: string, dto: UpdateIssueDto) {
+    const existing = await this.findOne(id);
+
+    const actor = await this.prisma.user.findUnique({
+      where: { id: dto.actorId },
+    });
+    if (!actor) {
+      throw new NotFoundException(`Actor user with ID ${dto.actorId} not found`);
+    }
+
+    if (dto.assigneeId) {
+      const assignee = await this.prisma.user.findUnique({
+        where: { id: dto.assigneeId },
+      });
+      if (!assignee) {
+        throw new NotFoundException(`Assignee user with ID ${dto.assigneeId} not found`);
+      }
+    }
+
+    const updateData: any = {};
+    if (dto.title !== undefined) updateData.title = dto.title;
+    if (dto.description !== undefined) updateData.description = dto.description;
+    if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.priority !== undefined) updateData.priority = dto.priority;
+    if (dto.assigneeId !== undefined) updateData.assigneeId = dto.assigneeId;
+
+    const updatedIssue = await this.prisma.issue.update({
+      where: { id },
+      data: updateData,
+      include: {
+        project: { select: { id: true, name: true } },
+        reporter: { select: { id: true, name: true, avatarUrl: true } },
+        assignee: { select: { id: true, name: true, avatarUrl: true } },
+      },
+    });
+
+    // Record activity only when value actually changes
+    if (dto.status !== undefined && dto.status !== existing.status) {
+      await this.prisma.activity.create({
+        data: {
+          type: ActivityType.STATUS_CHANGED,
+          issueId: id,
+          actorId: dto.actorId,
+          meta: { before: existing.status, after: dto.status },
+        },
+      });
+    }
+
+    if (dto.priority !== undefined && dto.priority !== existing.priority) {
+      await this.prisma.activity.create({
+        data: {
+          type: ActivityType.PRIORITY_CHANGED,
+          issueId: id,
+          actorId: dto.actorId,
+          meta: { before: existing.priority, after: dto.priority },
+        },
+      });
+    }
+
+    if (dto.assigneeId !== undefined && dto.assigneeId !== existing.assigneeId) {
+      await this.prisma.activity.create({
+        data: {
+          type: ActivityType.ASSIGNEE_CHANGED,
+          issueId: id,
+          actorId: dto.actorId,
+          meta: { before: existing.assigneeId, after: dto.assigneeId },
+        },
+      });
+    }
+
+    return updatedIssue;
+  }
+
+  async updateStatus(id: string, dto: UpdateStatusDto) {
+    return this.update(id, dto);
+  }
+
+  async updatePriority(id: string, dto: UpdatePriorityDto) {
+    return this.update(id, dto);
+  }
+
+  async updateAssignee(id: string, dto: UpdateAssigneeDto) {
+    return this.update(id, dto);
+  }
+}
