@@ -74,20 +74,20 @@ async function runTests() {
     console.log('--- AUTHENTICATION ---');
     
     // 1. Signup success
-    let res = await request('POST', '/auth/signup', { email: emailA, password: 'Password123!', name: 'User A' });
+    let res = await request('POST', '/auth/signup', { email: emailA, password: 'Password123!', name: 'User A', jobTitle: 'Developer' });
     record('1. Signup success', 201, res.status, res.status === 201);
     userA = res.body?.user; tokenA = res.body?.accessToken;
 
     // 2. Duplicate email
-    res = await request('POST', '/auth/signup', { email: emailA, password: 'Password123!', name: 'User A Dup' });
+    res = await request('POST', '/auth/signup', { email: emailA, password: 'Password123!', name: 'User A Dup', jobTitle: 'Developer' });
     record('2. Duplicate email -> 409', 409, res.status, res.status === 409);
 
     // 3. Invalid email
-    res = await request('POST', '/auth/signup', { email: 'not-an-email', password: 'Password123!', name: 'User Invalid' });
+    res = await request('POST', '/auth/signup', { email: 'not-an-email', password: 'Password123!', name: 'User Invalid', jobTitle: 'Tester' });
     record('3. Invalid email -> 400', 400, res.status, res.status === 400);
 
     // 4. Password shorter than 6 characters
-    res = await request('POST', '/auth/signup', { email: `short-${runId}@example.com`, password: '123', name: 'User Short' });
+    res = await request('POST', '/auth/signup', { email: `short-${runId}@example.com`, password: '123', name: 'User Short', jobTitle: 'Intern' });
     record('4. Password shorter than 6 chars -> 400', 400, res.status, res.status === 400);
 
     // 5. Login success
@@ -118,9 +118,9 @@ async function runTests() {
     record('11. Verify password is never returned', 'undefined', typeof userA.password, userA.password === undefined);
 
     // Setup B and C
-    res = await request('POST', '/auth/signup', { email: emailB, password: 'Password123!', name: 'User B' });
+    res = await request('POST', '/auth/signup', { email: emailB, password: 'Password123!', name: 'User B', jobTitle: 'Developer' });
     userB = res.body?.user; tokenB = res.body?.accessToken;
-    res = await request('POST', '/auth/signup', { email: emailC, password: 'Password123!', name: 'User C' });
+    res = await request('POST', '/auth/signup', { email: emailC, password: 'Password123!', name: 'User C', jobTitle: 'Developer' });
     userC = res.body?.user; tokenC = res.body?.accessToken;
 
     console.log('--- PROJECTS ---');

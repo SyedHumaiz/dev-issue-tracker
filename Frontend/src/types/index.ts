@@ -32,6 +32,13 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  jobTitle: string;
+  bio: string | null;
+  skills: string[];
+  githubUrl: string | null;
+  linkedinUrl: string | null;
+  yearsExperience: number | null;
+  location: string | null;
   avatarUrl: string | null;
   createdAt: string;
 }
@@ -178,6 +185,19 @@ export interface SignupRequest {
   email: string;
   password: string;
   name: string;
+  jobTitle: string;
+  avatarUrl?: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  jobTitle?: string;
+  bio?: string;
+  skills?: string[];
+  githubUrl?: string;
+  linkedinUrl?: string;
+  yearsExperience?: number;
+  location?: string;
   avatarUrl?: string;
 }
 

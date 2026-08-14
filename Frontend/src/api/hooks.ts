@@ -10,7 +10,9 @@ import {
   UpdateAssigneeRequest,
   CreateCommentRequest,
   IssueFilter,
+  UpdateProfileRequest,
 } from '@/src/types';
+import { useAuthStore } from '@/src/store/useAuthStore';
 
 // ── Query Keys ──
 export const queryKeys = {
@@ -23,6 +25,16 @@ export const queryKeys = {
 };
 
 // ── Users ──
+export function useUpdateProfile() {
+  const setUser = useAuthStore((state) => state.setUser);
+  return useMutation({
+    mutationFn: (data: UpdateProfileRequest) => usersApi.updateProfile(data).then((res) => res.data),
+    onSuccess: (updatedUser) => {
+      setUser(updatedUser);
+    },
+  });
+}
+
 export function useSearchUsers(query: string) {
   return useQuery({
     queryKey: ['users', 'search', query],

@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput, A
 import { Link } from 'expo-router';
 import { useProjects, useCreateProject } from '@/src/api/hooks';
 import { ProjectListItem } from '@/src/types';
+import { getErrorMessage } from '@/src/utils/error';
 
 export default function ProjectsScreen() {
   const { data: projects, isLoading, error } = useProjects();
@@ -18,7 +19,7 @@ export default function ProjectsScreen() {
       setIsCreating(false);
       setNewProjectName('');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Failed to create project');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 

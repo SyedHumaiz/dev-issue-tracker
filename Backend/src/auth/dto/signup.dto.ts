@@ -14,6 +14,10 @@ export class SignupDto {
   name: string;
 
   @IsString()
+  @IsNotEmpty()
+  jobTitle: string;
+
+  @IsString()
   @IsOptional()
   avatarUrl?: string;
 }

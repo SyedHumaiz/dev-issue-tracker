@@ -5,6 +5,7 @@ import {
   LoginRequest,
   User,
   UserSearchResult,
+  UpdateProfileRequest,
   ProjectListItem,
   ProjectDetail,
   CreateProjectRequest,
@@ -39,6 +40,9 @@ export const authApi = {
 export const usersApi = {
   search: (query: string) =>
     apiClient.get<UserSearchResult[]>('/users/search', { params: { q: query } }),
+
+  updateProfile: (data: UpdateProfileRequest) =>
+    apiClient.patch<User>('/users/profile', data),
 };
 
 // ── Projects ──

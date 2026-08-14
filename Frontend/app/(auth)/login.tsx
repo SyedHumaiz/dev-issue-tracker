@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { authApi } from '@/src/api/endpoints';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getErrorMessage } from '@/src/utils/error';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ export default function LoginScreen() {
       const res = await authApi.login({ email, password });
       await login(res.data.accessToken, res.data.user);
     } catch (err: any) {
-      Alert.alert('Login Failed', err.response?.data?.message || 'An error occurred');
+      Alert.alert('Login Failed', getErrorMessage(err));
     } finally {
       setLoading(false);
     }

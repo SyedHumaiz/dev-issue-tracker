@@ -6,6 +6,7 @@ import { useAuthStore } from '@/src/store/useAuthStore';
 import { IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDebounce } from '@/src/utils/useDebounce';
+import { getErrorMessage } from '@/src/utils/error';
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -67,7 +68,7 @@ export default function ProjectDetailsScreen() {
       setIssueTitle('');
       setIsCreatingIssue(false);
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Failed to create issue');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 
@@ -79,7 +80,7 @@ export default function ProjectDetailsScreen() {
       setSearchQuery('');
       setIsAddingMember(false);
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Failed to add member');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 
@@ -94,23 +95,40 @@ export default function ProjectDetailsScreen() {
     setSearchQuery('');
   };
 
-  const renderIssue = ({ item }: { item: any }) => (
-    <Link href={`/(app)/issues/${item.id}` as any} asChild>
-      <TouchableOpacity className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row justify-between items-center">
-        <View className="flex-1 mr-4">
-          <Text className="text-base font-semibold text-slate-900" numberOfLines={1}>{item.title}</Text>
-          <View className="flex-row items-center mt-2 space-x-2">
-            <View className={`px-2 py-1 rounded text-xs ${item.status === 'OPEN' ? 'bg-green-100' : 'bg-slate-100'}`}>
-              <Text className={`text-xs font-medium ${item.status === 'OPEN' ? 'text-green-700' : 'text-slate-600'}`}>{item.status}</Text>
+  const getPriorityStyle = (priority: string) => {
+    switch (priority) {
+      case 'CRITICAL': return { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' };
+      case 'HIGH': return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' };
+      case 'MEDIUM': return { bg: 'bg-yellow-100', text: 'text-yellow-700', dot: 'bg-yellow-500' };
+      case 'LOW': return { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' };
+      default: return { bg: 'bg-slate-100', text: 'text-slate-700', dot: 'bg-slate-500' };
+    }
+  };
+
+  const renderIssue = ({ item }: { item: any }) => {
+    const pStyle = getPriorityStyle(item.priority);
+    return (
+      <Link href={`/(app)/issues/${item.id}` as any} asChild>
+        <TouchableOpacity className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row justify-between items-center">
+          <View className="flex-1 mr-4">
+            <Text className="text-base font-semibold text-slate-900" numberOfLines={1}>{item.title}</Text>
+            <View className="flex-row items-center mt-2 space-x-2">
+              <View className={`px-2 py-1 rounded flex-row items-center space-x-1.5 ${pStyle.bg}`}>
+                <View className={`w-1.5 h-1.5 rounded-full ${pStyle.dot}`} />
+                <Text className={`text-xs font-medium ${pStyle.text}`}>{item.priority}</Text>
+              </View>
+              <View className={`px-2 py-1 rounded ${item.status === 'OPEN' ? 'bg-green-100' : 'bg-slate-100'}`}>
+                <Text className={`text-xs font-medium ${item.status === 'OPEN' ? 'text-green-700' : 'text-slate-600'}`}>{item.status}</Text>
+              </View>
+              <Text className="text-slate-400 text-xs">•</Text>
+              <Text className="text-slate-500 text-xs" numberOfLines={1}>Rep: {item.reporter.name}</Text>
             </View>
-            <Text className="text-slate-400 text-xs">•</Text>
-            <Text className="text-slate-500 text-xs">Rep: {item.reporter.name}</Text>
           </View>
-        </View>
-        <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
-      </TouchableOpacity>
-    </Link>
-  );
+          <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
+        </TouchableOpacity>
+      </Link>
+    );
+  };
 
   const renderMember = ({ item }: { item: any }) => (
     <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row justify-between items-center">

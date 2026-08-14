@@ -39,6 +39,13 @@ model User {
   password       String
   name           String
   avatarUrl      String?
+  jobTitle       String          @default("Developer")
+  bio            String?
+  skills         String[]        @default([])
+  githubUrl      String?
+  linkedinUrl    String?
+  yearsExperience Int?
+  location       String?
   createdAt      DateTime        @default(now())
   memberships    ProjectMember[]
   reportedIssues Issue[]         @relation("Reporter")

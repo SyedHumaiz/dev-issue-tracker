@@ -1,6 +1,22 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+
+const userSelect = {
+  id: true,
+  email: true,
+  name: true,
+  jobTitle: true,
+  bio: true,
+  skills: true,
+  githubUrl: true,
+  linkedinUrl: true,
+  yearsExperience: true,
+  location: true,
+  avatarUrl: true,
+  createdAt: true,
+};
 
 @Injectable()
 export class UsersService {
@@ -15,44 +31,35 @@ export class UsersService {
     }
     return this.prisma.user.create({
       data: dto,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-        createdAt: true,
-      },
+      select: userSelect,
     });
   }
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-        createdAt: true,
-      },
+      select: userSelect,
     });
   }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-        createdAt: true,
-      },
+      select: userSelect,
     });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     return user;
   }
+
+  async updateProfile(id: string, dto: UpdateProfileDto) {
+    return this.prisma.user.update({
+      where: { id },
+      data: dto,
+      select: userSelect,
+    });
+  }
+
 
   async search(query: string, excludeUserId?: string) {
     const tokens = query.trim().split(/\s+/).filter(Boolean);

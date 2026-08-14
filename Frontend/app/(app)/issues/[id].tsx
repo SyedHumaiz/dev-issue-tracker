@@ -3,6 +3,7 @@ import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, A
 import { useLocalSearchParams } from 'expo-router';
 import { useIssue, useUpdateStatus, useCreateComment } from '@/src/api/hooks';
 import { IssueStatus } from '@/src/types';
+import { getErrorMessage } from '@/src/utils/error';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,7 +36,7 @@ export default function IssueDetailsScreen() {
     try {
       await updateStatus.mutateAsync({ status: newStatus });
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Failed to update status');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 
@@ -45,7 +46,7 @@ export default function IssueDetailsScreen() {
       await createComment.mutateAsync({ body: commentBody });
       setCommentBody('');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Failed to post comment');
+      Alert.alert('Error', getErrorMessage(err));
     }
   };
 
