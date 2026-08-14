@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectsApi, issuesApi, commentsApi, activityApi } from '@/src/api/endpoints';
+import { projectsApi, issuesApi, commentsApi, activityApi, usersApi } from '@/src/api/endpoints';
 import {
   CreateProjectRequest,
   AddMemberRequest,
@@ -21,6 +21,16 @@ export const queryKeys = {
   comments: (issueId: string) => ['comments', issueId] as const,
   activity: (issueId: string) => ['activity', issueId] as const,
 };
+
+// ── Users ──
+export function useSearchUsers(query: string) {
+  return useQuery({
+    queryKey: ['users', 'search', query],
+    queryFn: async () => (await usersApi.search(query)).data,
+    enabled: query.trim().length >= 2,
+    staleTime: 30_000,
+  });
+}
 
 // ── Projects ──
 export function useProjects() {

@@ -51,6 +51,14 @@ export interface UserMemberInfo {
   avatarUrl: string | null;
 }
 
+// Shape returned by GET /users/search — used for the searchable user selector
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
 // ── Auth ──
 // Shape returned by POST /auth/signup and POST /auth/login
 export interface AuthResponse {

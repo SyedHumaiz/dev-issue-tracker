@@ -4,6 +4,7 @@ import {
   SignupRequest,
   LoginRequest,
   User,
+  UserSearchResult,
   ProjectListItem,
   ProjectDetail,
   CreateProjectRequest,
@@ -32,6 +33,12 @@ export const authApi = {
 
   me: () =>
     apiClient.get<User>('/auth/me'),
+};
+
+// ── Users ──
+export const usersApi = {
+  search: (query: string) =>
+    apiClient.get<UserSearchResult[]>('/users/search', { params: { q: query } }),
 };
 
 // ── Projects ──

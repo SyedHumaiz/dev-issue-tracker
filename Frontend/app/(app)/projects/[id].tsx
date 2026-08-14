@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, Link } from 'expo-router';
-import { useProject, useCreateIssue, useAddMember } from '@/src/api/hooks';
+import { useProject, useCreateIssue, useAddMember, useSearchUsers } from '@/src/api/hooks';
 import { useAuthStore } from '@/src/store/useAuthStore';
-import { IssueStatus, Priority, Role } from '@/src/types';
+import { IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useDebounce } from '@/src/utils/useDebounce';
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,7 +22,19 @@ export default function ProjectDetailsScreen() {
 
   // Member Addition State
   const [isAddingMember, setIsAddingMember] = useState(false);
-  const [memberUserId, setMemberUserId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+
+  // Debounce the search query (~300ms)
+  const debouncedQuery = useDebounce(searchQuery, 300);
+  const { data: searchResults, isLoading: isSearching } = useSearchUsers(debouncedQuery);
+
+  // Filter out users who are already project members (client-side)
+  const filteredResults = useMemo(() => {
+    if (!searchResults || !project) return [];
+    const existingMemberIds = new Set(project.members.map((m) => m.userId));
+    return searchResults.filter((u) => !existingMemberIds.has(u.id));
+  }, [searchResults, project]);
 
   if (isLoading) {
     return (
@@ -59,14 +72,26 @@ export default function ProjectDetailsScreen() {
   };
 
   const handleAddMember = async () => {
-    if (!memberUserId.trim()) return;
+    if (!selectedUser) return;
     try {
-      await addMember.mutateAsync({ userId: memberUserId.trim(), role: Role.MEMBER });
-      setMemberUserId('');
+      await addMember.mutateAsync({ userId: selectedUser.id, role: Role.MEMBER });
+      setSelectedUser(null);
+      setSearchQuery('');
       setIsAddingMember(false);
     } catch (err: any) {
       Alert.alert('Error', err.response?.data?.message || 'Failed to add member');
     }
+  };
+
+  const handleCancelAddMember = () => {
+    setIsAddingMember(false);
+    setSearchQuery('');
+    setSelectedUser(null);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedUser(null);
+    setSearchQuery('');
   };
 
   const renderIssue = ({ item }: { item: any }) => (
@@ -98,6 +123,9 @@ export default function ProjectDetailsScreen() {
       </View>
     </View>
   );
+
+  // Whether to show the search results dropdown
+  const showSearchResults = !selectedUser && debouncedQuery.trim().length >= 2;
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -173,26 +201,77 @@ export default function ProjectDetailsScreen() {
           {isOwner && (
             isAddingMember ? (
               <View className="bg-white p-4 rounded-xl mb-4 shadow-sm border border-slate-100">
-                <TextInput
-                  className="border border-slate-200 rounded-lg px-4 py-3 text-slate-900 mb-3"
-                  placeholder="User ID to add"
-                  value={memberUserId}
-                  onChangeText={setMemberUserId}
-                  autoFocus
-                />
+                {/* Search input or selected user display */}
+                {selectedUser ? (
+                  <View className="flex-row items-center border border-blue-200 bg-blue-50 rounded-lg px-4 py-3 mb-3">
+                    <View className="flex-1">
+                      <Text className="text-base font-semibold text-slate-900">{selectedUser.name}</Text>
+                      <Text className="text-slate-500 text-xs">{selectedUser.email}</Text>
+                    </View>
+                    <TouchableOpacity onPress={handleClearSelection}>
+                      <MaterialIcons name="close" size={20} color="#64748b" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TextInput
+                    className="border border-slate-200 rounded-lg px-4 py-3 text-slate-900 mb-1"
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoFocus
+                    autoCapitalize="none"
+                  />
+                )}
+
+                {/* Search results dropdown */}
+                {showSearchResults && (
+                  <View className="border border-slate-200 rounded-lg mb-3 max-h-48 overflow-hidden">
+                    {isSearching ? (
+                      <View className="py-4 items-center">
+                        <ActivityIndicator size="small" />
+                      </View>
+                    ) : filteredResults.length > 0 ? (
+                      <ScrollView className="max-h-48" nestedScrollEnabled>
+                        {filteredResults.map((user) => (
+                          <TouchableOpacity
+                            key={user.id}
+                            className="px-4 py-3 border-b border-slate-100"
+                            onPress={() => {
+                              setSelectedUser(user);
+                              setSearchQuery('');
+                            }}
+                          >
+                            <Text className="text-sm font-semibold text-slate-900">{user.name}</Text>
+                            <Text className="text-xs text-slate-500">{user.email}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    ) : (
+                      <View className="py-4 items-center">
+                        <Text className="text-slate-400 text-sm">No users found</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {/* Hint text when typing but not enough characters */}
+                {!selectedUser && searchQuery.length > 0 && searchQuery.trim().length < 2 && (
+                  <Text className="text-slate-400 text-xs mb-3 px-1">Type at least 2 characters to search</Text>
+                )}
+
                 <View className="flex-row justify-end space-x-3">
-                  <TouchableOpacity onPress={() => setIsAddingMember(false)} className="px-4 py-2">
+                  <TouchableOpacity onPress={handleCancelAddMember} className="px-4 py-2">
                     <Text className="text-slate-500 font-medium">Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     onPress={handleAddMember} 
-                    className="bg-blue-600 px-4 py-2 rounded-lg"
-                    disabled={addMember.isPending}
+                    className={`px-4 py-2 rounded-lg ${selectedUser ? 'bg-blue-600' : 'bg-slate-300'}`}
+                    disabled={!selectedUser || addMember.isPending}
                   >
                     {addMember.isPending ? (
                       <ActivityIndicator color="#fff" size="small" />
                     ) : (
-                      <Text className="text-white font-medium">Add</Text>
+                      <Text className={`font-medium ${selectedUser ? 'text-white' : 'text-slate-500'}`}>Add</Text>
                     )}
                   </TouchableOpacity>
                 </View>

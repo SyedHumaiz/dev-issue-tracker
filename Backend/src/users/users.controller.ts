@@ -1,6 +1,7 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -10,6 +11,14 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   findAll() {
     return this.usersService.findAll();
+  }
+
+  // Must be declared BEFORE ':id' so NestJS doesn't interpret 'search' as an id param
+  @Get('search')
+  @UseGuards(JwtAuthGuard)
+  search(@Query('q') query: string, @CurrentUser() user: any) {
+    if (!query || query.trim().length < 2) return [];
+    return this.usersService.search(query, user.id);
   }
 
   @Get(':id')
