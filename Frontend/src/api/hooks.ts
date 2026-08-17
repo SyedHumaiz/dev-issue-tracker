@@ -14,6 +14,7 @@ import {
 } from '@/src/types';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { queryKeys } from '@/src/api/queryKeys';
+import { patchIssueCollections } from '@/src/api/realtimeCache';
 
 // ── Query Keys ──
 export { queryKeys } from '@/src/api/queryKeys';
@@ -125,8 +126,10 @@ export function useCreateIssue() {
 export function useUpdateStatus(issueId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateStatusRequest) => issuesApi.updateStatus(issueId, data),
-    onSuccess: () => {
+    mutationFn: (data: UpdateStatusRequest) =>
+      issuesApi.updateStatus(issueId, data).then((res) => res.data),
+    onSuccess: (updatedIssue) => {
+      patchIssueCollections(qc, updatedIssue.projectId, issueId, updatedIssue);
       qc.invalidateQueries({ queryKey: queryKeys.issue(issueId) });
       qc.invalidateQueries({ queryKey: queryKeys.activity(issueId) });
     },
@@ -136,8 +139,10 @@ export function useUpdateStatus(issueId: string) {
 export function useUpdatePriority(issueId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdatePriorityRequest) => issuesApi.updatePriority(issueId, data),
-    onSuccess: () => {
+    mutationFn: (data: UpdatePriorityRequest) =>
+      issuesApi.updatePriority(issueId, data).then((res) => res.data),
+    onSuccess: (updatedIssue) => {
+      patchIssueCollections(qc, updatedIssue.projectId, issueId, updatedIssue);
       qc.invalidateQueries({ queryKey: queryKeys.issue(issueId) });
       qc.invalidateQueries({ queryKey: queryKeys.activity(issueId) });
     },
@@ -147,8 +152,10 @@ export function useUpdatePriority(issueId: string) {
 export function useUpdateAssignee(issueId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateAssigneeRequest) => issuesApi.updateAssignee(issueId, data),
-    onSuccess: () => {
+    mutationFn: (data: UpdateAssigneeRequest) =>
+      issuesApi.updateAssignee(issueId, data).then((res) => res.data),
+    onSuccess: (updatedIssue) => {
+      patchIssueCollections(qc, updatedIssue.projectId, issueId, updatedIssue);
       qc.invalidateQueries({ queryKey: queryKeys.issue(issueId) });
       qc.invalidateQueries({ queryKey: queryKeys.activity(issueId) });
     },

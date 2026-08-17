@@ -78,13 +78,13 @@ export const issuesApi = {
     apiClient.post<IssueListItem>('/issues', data),
 
   updateStatus: (id: string, data: UpdateStatusRequest) =>
-    apiClient.patch(`/issues/${id}/status`, data),
+    apiClient.patch<IssueListItem>(`/issues/${id}/status`, data),
 
   updatePriority: (id: string, data: UpdatePriorityRequest) =>
-    apiClient.patch(`/issues/${id}/priority`, data),
+    apiClient.patch<IssueListItem>(`/issues/${id}/priority`, data),
 
   updateAssignee: (id: string, data: UpdateAssigneeRequest) =>
-    apiClient.patch(`/issues/${id}/assignee`, data),
+    apiClient.patch<IssueListItem>(`/issues/${id}/assignee`, data),
 };
 
 // ── Comments ──

@@ -52,7 +52,7 @@ function appendUniqueComment(comments: Comment[], comment: Comment) {
   return [...comments, comment];
 }
 
-function patchIssueCollections(
+export function patchIssueCollections(
   queryClient: QueryClient,
   projectId: string,
   issueId: string,

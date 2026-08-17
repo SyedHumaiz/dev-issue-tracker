@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { colorScheme, useColorScheme } from 'nativewind';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DarkTheme as NavDarkTheme, DefaultTheme as NavLightTheme, ThemeProvider } from '@react-navigation/native';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeStore } from '@/src/store/useThemeStore';
@@ -56,12 +57,14 @@ export default function RootLayout() {
   const isDark = resolvedScheme === 'dark';
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={isDark ? CustomDarkTheme : CustomLightTheme}>
-        <StatusBar style={isDark ? 'light' : 'dark'} />
-        <Slot />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider value={isDark ? CustomDarkTheme : CustomLightTheme}>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+          <Slot />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }
 
