@@ -26,10 +26,10 @@ export default function ProjectsScreen() {
 
   const renderItem = ({ item }: { item: ProjectListItem }) => (
     <Link href={`/(app)/projects/${item.id}` as any} asChild>
-      <TouchableOpacity className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row items-center">
+      <TouchableOpacity className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-3 shadow-sm border border-border dark:border-border-dark flex-row items-center">
         <View className="w-10 h-10 rounded-lg bg-blue-100 justify-center items-center mr-3"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
-        <View className="flex-1"><Text className="text-lg font-semibold text-slate-900">{item.name}</Text>
-        <Text className="text-slate-500 mt-1 text-sm">
+        <View className="flex-1"><Text className="text-lg font-semibold text-foreground dark:text-foreground-dark">{item.name}</Text>
+        <Text className="text-muted dark:text-muted-dark mt-1 text-sm">
           {item._count.issues} issues • {item._count.members} members
         </Text></View><MaterialIcons name="chevron-right" size={22} color="#94a3b8" />
       </TouchableOpacity>
@@ -38,38 +38,40 @@ export default function ProjectsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <ActivityIndicator size="large" />
+        <Text className="mt-3 text-sm text-slate-500">Loading projects…</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <Text className="text-red-500">Failed to load projects.</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-slate-50 p-4">
+    <View className="flex-1 bg-background dark:bg-background-dark p-4">
       {isCreating ? (
-        <View className="bg-white p-4 rounded-xl mb-4 shadow-sm border border-slate-100">
+        <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-4 shadow-sm border border-border dark:border-border-dark">
           <TextInput
-            className="border border-slate-200 rounded-lg px-4 py-3 text-slate-900 mb-3"
+            className="border border-border dark:border-border-dark bg-slate-50 dark:bg-slate-800 rounded-lg px-4 py-3 text-foreground dark:text-foreground-dark mb-3"
             placeholder="Project Name"
             value={newProjectName}
             onChangeText={setNewProjectName}
             autoFocus
           />
           <View className="flex-row justify-end space-x-3">
-            <TouchableOpacity onPress={() => setIsCreating(false)} className="px-4 py-2">
+            <TouchableOpacity onPress={() => setIsCreating(false)} className="px-4 py-2.5" activeOpacity={0.7}>
               <Text className="text-slate-500 font-medium">Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleCreate} 
-              className="bg-blue-600 px-4 py-2 rounded-lg"
+              className="bg-blue-600 px-4 py-2.5 rounded-lg shadow-sm"
+              activeOpacity={0.8}
               disabled={createProject.isPending}
             >
               {createProject.isPending ? (
@@ -82,10 +84,11 @@ export default function ProjectsScreen() {
         </View>
       ) : (
         <TouchableOpacity
-          className="bg-blue-600 p-4 rounded-xl mb-4 flex-row justify-center items-center"
+          className="bg-blue-600 px-4 py-3.5 rounded-xl mb-4 flex-row justify-center items-center shadow-sm"
           onPress={() => setIsCreating(true)}
+          activeOpacity={0.8}
         >
-          <Text className="text-white font-semibold text-base">New Project</Text>
+          <MaterialIcons name="add" size={20} color="#fff" /><Text className="text-white font-semibold text-base ml-1">New Project</Text>
         </TouchableOpacity>
       )}
 
@@ -95,8 +98,10 @@ export default function ProjectsScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
-          <View className="items-center mt-10">
-            <Text className="text-slate-500 text-base">No projects yet. Create one!</Text>
+          <View className="items-center mt-12 bg-surface dark:bg-surface-dark rounded-xl border border-border dark:border-border-dark p-6">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
+            <Text className="mt-3 text-base font-semibold text-slate-800">No projects yet</Text>
+            <Text className="mt-1 text-center text-sm text-slate-500">Create a project to start tracking your work.</Text>
           </View>
         }
       />

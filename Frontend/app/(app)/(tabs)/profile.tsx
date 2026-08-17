@@ -5,11 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { useUpdateProfile } from '@/src/api/hooks';
 import { getErrorMessage } from '@/src/utils/error';
+import { ThemeMode, useThemeStore } from '@/src/store/useThemeStore';
+import { ProfileRedesign } from '@/src/components/ProfileRedesign';
 
 export default function ProfileScreen() {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user)!;
   const logout = useAuthStore((state) => state.logout);
   const updateProfile = useUpdateProfile();
+  const themeMode = useThemeStore((state) => state.themeMode);
+  const setThemeMode = useThemeStore((state) => state.setThemeMode);
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   
@@ -63,8 +67,10 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
+  return <ProfileRedesign user={user} onLogout={logout} />;
+
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} className="flex-1 px-6">
         {/* Header section */}
         <View className="items-center mb-6 mt-6">
@@ -73,30 +79,36 @@ export default function ProfileScreen() {
               {user.name.charAt(0).toUpperCase()}
             </Text>
           </View>
-          <Text className="text-2xl font-bold text-slate-900 text-center">{user.name}</Text>
+          <Text className="text-2xl font-bold text-foreground dark:text-foreground-dark text-center">{user.name}</Text>
           <Text className="text-blue-600 font-medium text-base mt-1 text-center">{user.jobTitle}</Text>
-          <Text className="text-slate-500 mt-1 text-center">{user.email}</Text>
+          <Text className="text-muted dark:text-muted-dark mt-1 text-center">{user.email}</Text>
           
           <TouchableOpacity 
             onPress={handleEditOpen}
-            className="mt-4 bg-slate-200 px-6 py-2 rounded-full flex-row items-center space-x-2"
+            className="mt-4 bg-slate-200 dark:bg-slate-700 px-6 py-2 rounded-full flex-row items-center space-x-2"
           >
             <MaterialIcons name="edit" size={16} color="#475569" />
-            <Text className="text-slate-700 font-medium">Edit Profile</Text>
+            <Text className="text-slate-700 dark:text-slate-100 font-medium">Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
         {/* Info Cards */}
         <View className="space-y-4 mb-8">
+          <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border dark:border-border-dark">
+            <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Appearance</Text>
+            <View className="flex-row rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
+              {(['system', 'light', 'dark'] as ThemeMode[]).map((mode) => <TouchableOpacity key={mode} onPress={() => setThemeMode(mode)} className={`flex-1 rounded-md py-2 items-center ${themeMode === mode ? 'bg-surface dark:bg-surface-dark shadow-sm' : ''}`}><Text className={`text-xs font-semibold capitalize ${themeMode === mode ? 'text-blue-600 dark:text-blue-400' : 'text-muted dark:text-muted-dark'}`}>{mode}</Text></TouchableOpacity>)}
+            </View>
+          </View>
           {user.bio ? (
-            <View className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+            <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border dark:border-border-dark">
               <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bio</Text>
-              <Text className="text-slate-700 leading-5">{user.bio}</Text>
+              <Text className="text-slate-700 dark:text-slate-200 leading-5">{user.bio}</Text>
             </View>
           ) : null}
 
           {user.skills && user.skills.length > 0 ? (
-            <View className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+            <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border dark:border-border-dark">
               <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Skills</Text>
               <View className="flex-row flex-wrap">
                 {user.skills.map((skill, i) => (
@@ -109,13 +121,13 @@ export default function ProfileScreen() {
           ) : null}
 
           {(user.location || user.yearsExperience != null) ? (
-            <View className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex-row justify-between">
+            <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border dark:border-border-dark flex-row justify-between">
               {user.location && (
                 <View className="flex-1">
                   <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Location</Text>
                   <View className="flex-row items-center space-x-1">
                     <MaterialIcons name="location-pin" size={16} color="#64748b" />
-                    <Text className="text-slate-700">{user.location}</Text>
+                    <Text className="text-slate-700 dark:text-slate-200">{user.location}</Text>
                   </View>
                 </View>
               )}
@@ -124,7 +136,7 @@ export default function ProfileScreen() {
                   <Text className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Experience</Text>
                   <View className="flex-row items-center space-x-1">
                     <MaterialIcons name="work" size={16} color="#64748b" />
-                    <Text className="text-slate-700">{user.yearsExperience} {user.yearsExperience === 1 ? 'year' : 'years'}</Text>
+                    <Text className="text-slate-700 dark:text-slate-200">{user.yearsExperience} {user.yearsExperience === 1 ? 'year' : 'years'}</Text>
                   </View>
                 </View>
               )}
@@ -132,17 +144,17 @@ export default function ProfileScreen() {
           ) : null}
 
           {(user.githubUrl || user.linkedinUrl) ? (
-            <View className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex-row space-x-4">
+            <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-border dark:border-border-dark flex-row space-x-4">
               {user.githubUrl && (
-                <TouchableOpacity onPress={() => openLink(user.githubUrl)} className="flex-row items-center space-x-2 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">
+                <TouchableOpacity onPress={() => openLink(user.githubUrl)} className="flex-row items-center space-x-2 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-border-dark">
                   <FontAwesome name="github" size={20} color="#0f172a" />
-                  <Text className="text-slate-700 font-medium">GitHub</Text>
+                  <Text className="text-slate-700 dark:text-slate-200 font-medium">GitHub</Text>
                 </TouchableOpacity>
               )}
               {user.linkedinUrl && (
-                <TouchableOpacity onPress={() => openLink(user.linkedinUrl)} className="flex-row items-center space-x-2 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">
+                <TouchableOpacity onPress={() => openLink(user.linkedinUrl)} className="flex-row items-center space-x-2 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-border-dark">
                   <FontAwesome name="linkedin-square" size={20} color="#0077b5" />
-                  <Text className="text-slate-700 font-medium">LinkedIn</Text>
+                  <Text className="text-slate-700 dark:text-slate-200 font-medium">LinkedIn</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -161,12 +173,12 @@ export default function ProfileScreen() {
 
       {/* Edit Profile Modal */}
       <Modal visible={isEditModalVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView className="flex-1 bg-white">
-          <View className="flex-row justify-between items-center px-4 py-4 border-b border-slate-200">
+        <SafeAreaView className="flex-1 bg-surface dark:bg-surface-dark">
+          <View className="flex-row justify-between items-center px-4 py-4 border-b border-border dark:border-border-dark">
             <TouchableOpacity onPress={() => setEditModalVisible(false)}>
               <Text className="text-slate-500 font-medium text-base px-2">Cancel</Text>
             </TouchableOpacity>
-            <Text className="text-lg font-bold text-slate-900">Edit Profile</Text>
+            <Text className="text-lg font-bold text-foreground dark:text-foreground-dark">Edit Profile</Text>
             <TouchableOpacity onPress={handleSaveProfile} disabled={updateProfile.isPending}>
               {updateProfile.isPending ? (
                 <ActivityIndicator size="small" color="#2563eb" className="px-2" />

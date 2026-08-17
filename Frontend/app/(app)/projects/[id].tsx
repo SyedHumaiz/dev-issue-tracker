@@ -8,6 +8,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useDebounce } from '@/src/utils/useDebounce';
 import { getErrorMessage } from '@/src/utils/error';
 import { IssueCard } from '@/src/components/IssueCard';
+import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -159,23 +160,9 @@ export default function ProjectDetailsScreen() {
 
   return (
     <View className="flex-1 bg-slate-50">
-      <View className="bg-white px-4 pt-6 pb-2 border-b border-slate-200">
-        <Text className="text-2xl font-bold text-slate-900 mb-4">{project.name}</Text>
-        
-        <View className="flex-row space-x-6">
-          <TouchableOpacity 
-            className={`pb-2 ${activeTab === 'issues' ? 'border-b-2 border-blue-600' : ''}`}
-            onPress={() => setActiveTab('issues')}
-          >
-            <Text className={`text-base font-medium ${activeTab === 'issues' ? 'text-blue-600' : 'text-slate-500'}`}>Issues</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            className={`pb-2 ${activeTab === 'members' ? 'border-b-2 border-blue-600' : ''}`}
-            onPress={() => setActiveTab('members')}
-          >
-            <Text className={`text-base font-medium ${activeTab === 'members' ? 'text-blue-600' : 'text-slate-500'}`}>Members</Text>
-          </TouchableOpacity>
-        </View>
+      <View className="bg-white pt-6 border-b border-slate-200">
+        <View className="px-4 pb-4"><Text className="text-2xl font-semibold text-slate-900">{project.name}</Text><Text className="mt-1 text-sm text-slate-500">{project.issues.length} issues · {project.members.length} members</Text></View>
+        <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'issues', label: 'Issues' }, { value: 'members', label: 'Members' }]} />
       </View>
 
       {activeTab === 'issues' && (
@@ -236,7 +223,7 @@ export default function ProjectDetailsScreen() {
             data={issues}
             keyExtractor={(item) => item.id}
             renderItem={renderIssue}
-            ListEmptyComponent={<Text className="text-slate-500 text-center mt-10">No issues yet.</Text>}
+            ListEmptyComponent={<View className="items-center mt-12 rounded-xl border border-slate-100 bg-white p-6"><View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"><MaterialIcons name="assignment" size={20} color="#2563eb" /></View><Text className="mt-3 font-semibold text-slate-800">No issues yet</Text><Text className="mt-1 text-center text-sm text-slate-500">Create your first issue to start tracking work.</Text></View>}
           />
         </View>
       )}

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useIssue, useProject, useUpdateStatus, useUpdatePriority, useUpdateAssignee, useCreateComment } from '@/src/api/hooks';
 import { IssueStatus, Priority } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
 import { Avatar, PriorityBadge, StatusBadge } from '@/src/components/IssueCard';
+import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -88,24 +90,7 @@ export default function IssueDetailsScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">PRIORITY</Text>{[Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL].map((priority) => <TouchableOpacity key={priority} onPress={() => handlePriorityChange(priority)} disabled={updatePriority.isPending} className={`rounded-full px-3 py-2 ${issue.priority === priority ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.priority === priority ? 'text-white' : 'text-slate-600'}`}>{priority}</Text></TouchableOpacity>)}</View></ScrollView>
         {project && <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-1"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">ASSIGNEE</Text><TouchableOpacity onPress={() => handleAssigneeChange(null)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === null ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === null ? 'text-white' : 'text-slate-600'}`}>Unassigned</Text></TouchableOpacity>{project.members.map((member) => <TouchableOpacity key={member.userId} onPress={() => handleAssigneeChange(member.userId)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === member.userId ? 'text-white' : 'text-slate-600'}`}>{member.user.name}</Text></TouchableOpacity>)}</View></ScrollView>}
         
-        <View className="flex-row space-x-6 border-t border-slate-100 pt-3">
-          <TouchableOpacity 
-            className={`pb-2 ${activeTab === 'comments' ? 'border-b-2 border-blue-600' : ''}`}
-            onPress={() => setActiveTab('comments')}
-          >
-            <Text className={`text-sm font-medium ${activeTab === 'comments' ? 'text-blue-600' : 'text-slate-500'}`}>
-              Comments ({issue.comments.length})
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            className={`pb-2 ${activeTab === 'activity' ? 'border-b-2 border-blue-600' : ''}`}
-            onPress={() => setActiveTab('activity')}
-          >
-            <Text className={`text-sm font-medium ${activeTab === 'activity' ? 'text-blue-600' : 'text-slate-500'}`}>
-              Activity
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'comments', label: `Comments (${issue.comments.length})` }, { value: 'activity', label: 'Activity' }]} />
       </View>
 
       <View className="flex-1 px-4 pt-4">
@@ -114,7 +99,7 @@ export default function IssueDetailsScreen() {
             data={issue.comments}
             keyExtractor={(item) => item.id}
             renderItem={renderComment}
-            ListEmptyComponent={<Text className="text-slate-500 text-center mt-10">No comments yet.</Text>}
+            ListEmptyComponent={<View className="mt-12 items-center"><View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"><MaterialIcons name="chat-bubble-outline" size={19} color="#2563eb" /></View><Text className="mt-3 font-semibold text-slate-800">No comments yet</Text><Text className="mt-1 text-center text-sm text-slate-500">Start the conversation on this issue.</Text></View>}
             contentContainerStyle={{ paddingBottom: 96 }}
           />
         ) : (
@@ -122,24 +107,25 @@ export default function IssueDetailsScreen() {
             data={issue.activities}
             keyExtractor={(item) => item.id}
             renderItem={renderActivity}
-            ListEmptyComponent={<Text className="text-slate-500 text-center mt-10">No activity yet.</Text>}
+            ListEmptyComponent={<View className="mt-12 items-center"><View className="h-10 w-10 items-center justify-center rounded-full bg-slate-100"><MaterialIcons name="history" size={20} color="#64748b" /></View><Text className="mt-3 font-semibold text-slate-800">No activity yet</Text><Text className="mt-1 text-center text-sm text-slate-500">Updates to this issue will appear here.</Text></View>}
             contentContainerStyle={{ paddingBottom: 96 }}
           />
         )}
       </View>
 
       {activeTab === 'comments' && (
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 flex-row items-center">
+        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 pb-5 pt-3 flex-row items-center">
           <TextInput
-            className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 mr-3 text-slate-900"
+            className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-3 mr-3 text-slate-900"
             placeholder="Add a comment..."
             value={commentBody}
             onChangeText={setCommentBody}
           />
           <TouchableOpacity 
-            className="bg-blue-600 w-10 h-10 rounded-full justify-center items-center"
+            className="bg-blue-600 w-11 h-11 rounded-full justify-center items-center shadow-sm"
             onPress={handleCreateComment}
             disabled={createComment.isPending}
+            activeOpacity={0.75}
           >
             {createComment.isPending ? (
               <ActivityIndicator color="#fff" size="small" />

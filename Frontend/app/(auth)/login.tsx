@@ -30,17 +30,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 justify-center px-6">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark justify-center px-6">
       <View className="mb-8">
-        <Text className="text-3xl font-bold text-slate-900 mb-2">Welcome Back</Text>
-        <Text className="text-base text-slate-500">Sign in to Dev Issue Tracker</Text>
+        <Text className="text-3xl font-bold text-foreground dark:text-foreground-dark mb-2">Welcome Back</Text>
+        <Text className="text-base text-muted dark:text-muted-dark">Sign in to Dev Issue Tracker</Text>
       </View>
 
       <View className="space-y-4">
         <View>
-          <Text className="text-sm font-medium text-slate-700 mb-1">Email</Text>
+          <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Email</Text>
           <TextInput
-            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+            className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 text-foreground dark:text-foreground-dark"
+            placeholderTextColor="#94a3b8"
             placeholder="john@example.com"
             autoCapitalize="none"
             keyboardType="email-address"
@@ -50,9 +51,10 @@ export default function LoginScreen() {
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-slate-700 mb-1">Password</Text>
+          <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Password</Text>
           <TextInput
-            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+            className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 text-foreground dark:text-foreground-dark"
+            placeholderTextColor="#94a3b8"
             placeholder="••••••••"
             secureTextEntry
             value={password}
@@ -74,7 +76,7 @@ export default function LoginScreen() {
       </View>
 
       <View className="flex-row justify-center mt-8">
-        <Text className="text-slate-500 text-base">Don't have an account? </Text>
+        <Text className="text-muted dark:text-muted-dark text-base">Don't have an account? </Text>
         <Link href={"/(auth)/signup" as any} asChild>
           <TouchableOpacity>
             <Text className="text-blue-600 font-semibold text-base">Sign Up</Text>

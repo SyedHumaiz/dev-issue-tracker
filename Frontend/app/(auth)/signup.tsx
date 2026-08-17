@@ -71,18 +71,19 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 32 }}>
         <View className="mb-8">
-          <Text className="text-3xl font-bold text-slate-900 mb-2">Create Account</Text>
-          <Text className="text-base text-slate-500">Join Dev Issue Tracker today</Text>
+          <Text className="text-3xl font-bold text-foreground dark:text-foreground-dark mb-2">Create Account</Text>
+          <Text className="text-base text-muted dark:text-muted-dark">Join Dev Issue Tracker today</Text>
         </View>
 
         <View className="space-y-4">
           <View>
-            <Text className="text-sm font-medium text-slate-700 mb-1">Full Name *</Text>
+            <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Full Name *</Text>
             <TextInput
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+              className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 text-foreground dark:text-foreground-dark"
+              placeholderTextColor="#94a3b8"
               placeholder="John Doe"
               value={name}
               onChangeText={setName}
@@ -90,9 +91,10 @@ export default function SignupScreen() {
           </View>
 
           <View>
-            <Text className="text-sm font-medium text-slate-700 mb-1">Email *</Text>
+            <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Email *</Text>
             <TextInput
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+              className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 text-foreground dark:text-foreground-dark"
+              placeholderTextColor="#94a3b8"
               placeholder="john@example.com"
               autoCapitalize="none"
               keyboardType="email-address"
@@ -178,7 +180,7 @@ export default function SignupScreen() {
         </View>
 
         <View className="flex-row justify-center mt-8">
-          <Text className="text-slate-500 text-base">Already have an account? </Text>
+          <Text className="text-muted dark:text-muted-dark text-base">Already have an account? </Text>
           <Link href={"/(auth)/login" as any} asChild>
             <TouchableOpacity>
               <Text className="text-blue-600 font-semibold text-base">Sign In</Text>
@@ -190,9 +192,9 @@ export default function SignupScreen() {
       {/* Job Title Selector Modal */}
       <Modal visible={isJobModalVisible} animationType="slide" transparent={true}>
         <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl p-6 max-h-[80%]">
+          <View className="bg-surface dark:bg-surface-dark rounded-t-3xl p-6 max-h-[80%]">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-slate-900">Select Role</Text>
+              <Text className="text-xl font-bold text-foreground dark:text-foreground-dark">Select Role</Text>
               <TouchableOpacity onPress={() => setJobModalVisible(false)} className="p-2">
                 <MaterialIcons name="close" size={24} color="#64748b" />
               </TouchableOpacity>
@@ -201,10 +203,10 @@ export default function SignupScreen() {
               {JOB_TITLES.map((title) => (
                 <TouchableOpacity
                   key={title}
-                  className="py-4 border-b border-slate-100"
+                  className="py-4 border-b border-border dark:border-border-dark"
                   onPress={() => selectJobTitle(title)}
                 >
-                  <Text className="text-base text-slate-800">{title}</Text>
+                  <Text className="text-base text-slate-800 dark:text-slate-100">{title}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -214,4 +216,3 @@ export default function SignupScreen() {
     </SafeAreaView>
   );
 }
-
