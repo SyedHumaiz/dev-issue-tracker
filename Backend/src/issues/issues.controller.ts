@@ -21,13 +21,13 @@ export class IssuesController {
   }
 
   @Get()
-  findAll(@Query() filter: FilterIssueDto) {
-    return this.issuesService.findAll(filter);
+  findAll(@Query() filter: FilterIssueDto, @CurrentUser() user: any) {
+    return this.issuesService.findAll(filter, user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.issuesService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.issuesService.findOne(id, user.id);
   }
 
   @Patch(':id')

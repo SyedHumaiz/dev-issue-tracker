@@ -18,13 +18,13 @@ export class ProjectsController {
   }
 
   @Get()
-  findAll() {
-    return this.projectsService.findAll();
+  findAll(@CurrentUser() user: any) {
+    return this.projectsService.findAll(user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.projectsService.findOne(id, user.id);
   }
 
   @Post(':id/members')

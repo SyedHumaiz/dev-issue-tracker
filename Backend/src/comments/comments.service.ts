@@ -67,13 +67,15 @@ export class CommentsService {
     return comment;
   }
 
-  async findByIssue(issueId: string) {
+  async findByIssue(issueId: string, userId: string) {
     const issue = await this.prisma.issue.findUnique({
       where: { id: issueId },
     });
     if (!issue) {
       throw new NotFoundException(`Issue with ID ${issueId} not found`);
     }
+
+    await this.requireProjectMember(issue.projectId, userId);
 
     return this.prisma.comment.findMany({
       where: { issueId },

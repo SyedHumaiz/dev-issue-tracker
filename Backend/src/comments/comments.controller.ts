@@ -20,7 +20,7 @@ export class CommentsController {
   }
 
   @Get()
-  findByIssue(@Param('issueId') issueId: string) {
-    return this.commentsService.findByIssue(issueId);
+  findByIssue(@Param('issueId') issueId: string, @CurrentUser() user: any) {
+    return this.commentsService.findByIssue(issueId, user.id);
   }
 }

@@ -14,6 +14,15 @@ import { Role } from '@prisma/client';
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async requireProjectMember(projectId: string, userId: string): Promise<void> {
+    const membership = await this.prisma.projectMember.findUnique({
+      where: { userId_projectId: { userId, projectId } },
+    });
+    if (!membership) {
+      throw new ForbiddenException('You are not a member of this project');
+    }
+  }
+
   // Throws 403 if the user is not an OWNER of the project
   private async requireOwner(projectId: string, actorId: string): Promise<void> {
     const membership = await this.prisma.projectMember.findUnique({
@@ -43,11 +52,12 @@ export class ProjectsService {
       },
     });
 
-    return this.findOne(project.id);
+    return this.findOne(project.id, ownerId);
   }
 
-  async findAll() {
+  async findAll(userId: string) {
     return this.prisma.project.findMany({
+      where: { members: { some: { userId } } },
       include: {
         members: {
           include: {
@@ -72,7 +82,7 @@ export class ProjectsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const project = await this.prisma.project.findUnique({
       where: { id },
       include: {
@@ -106,11 +116,13 @@ export class ProjectsService {
       throw new NotFoundException(`Project with ID ${id} not found`);
     }
 
+    await this.requireProjectMember(id, userId);
+
     return project;
   }
 
   async addMember(projectId: string, dto: AddMemberDto, actorId: string) {
-    await this.findOne(projectId);
+    await this.findOne(projectId, actorId);
 
     // Only OWNERs can add members
     await this.requireOwner(projectId, actorId);
@@ -153,7 +165,7 @@ export class ProjectsService {
     dto: UpdateMemberRoleDto,
     actorId: string,
   ) {
-    await this.findOne(projectId);
+    await this.findOne(projectId, actorId);
 
     // Only OWNERs can change member roles
     await this.requireOwner(projectId, actorId);
@@ -188,7 +200,7 @@ export class ProjectsService {
   }
 
   async removeMember(projectId: string, userId: string, actorId: string) {
-    await this.findOne(projectId);
+    await this.findOne(projectId, actorId);
 
     // Only OWNERs can remove members
     await this.requireOwner(projectId, actorId);

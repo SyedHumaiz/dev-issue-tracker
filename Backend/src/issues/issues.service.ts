@@ -81,8 +81,11 @@ export class IssuesService {
     return issue;
   }
 
-  async findAll(filter: FilterIssueDto) {
-    const where: any = {};
+  async findAll(filter: FilterIssueDto, userId: string) {
+    if (filter.projectId) {
+      await this.requireProjectMember(filter.projectId, userId);
+    }
+    const where: any = { project: { members: { some: { userId } } } };
     if (filter.projectId) where.projectId = filter.projectId;
     if (filter.status) where.status = filter.status;
     if (filter.priority) where.priority = filter.priority;
@@ -101,7 +104,7 @@ export class IssuesService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const issue = await this.prisma.issue.findUnique({
       where: { id },
       include: {
@@ -127,11 +130,13 @@ export class IssuesService {
       throw new NotFoundException(`Issue with ID ${id} not found`);
     }
 
+    await this.requireProjectMember(issue.projectId, userId);
+
     return issue;
   }
 
   async update(id: string, dto: UpdateIssueDto, actorId: string) {
-    const existing = await this.findOne(id);
+    const existing = await this.findOne(id, actorId);
 
     const actor = await this.prisma.user.findUnique({
       where: { id: actorId },
