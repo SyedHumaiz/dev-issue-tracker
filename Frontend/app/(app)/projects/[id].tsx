@@ -264,7 +264,7 @@ export default function ProjectDetailsScreen() {
                         {filteredResults.map((user) => (
                           <TouchableOpacity
                             key={user.id}
-                            className="px-4 py-3 border-b border-border dark:border-border-dark"
+                            className="border-b border-border bg-surface px-4 py-3 dark:border-border-dark dark:bg-surface-dark"
                             onPress={() => {
                               setSelectedUser(user);
                               setSearchQuery('');

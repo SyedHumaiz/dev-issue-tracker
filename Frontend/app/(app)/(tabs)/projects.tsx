@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { useProjects, useCreateProject } from '@/src/api/hooks';
 import { ProjectListItem } from '@/src/types';
@@ -26,13 +26,13 @@ export default function ProjectsScreen() {
 
   const renderItem = ({ item }: { item: ProjectListItem }) => (
     <Link href={`/(app)/projects/${item.id}` as any} asChild>
-      <TouchableOpacity className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-3 shadow-sm border border-border dark:border-border-dark flex-row items-center">
+      <Pressable className="mb-3 flex-row items-center rounded-xl border border-border bg-surface p-4 shadow-sm dark:border-border-dark dark:bg-surface-dark">
         <View className="w-10 h-10 rounded-lg bg-blue-100 justify-center items-center mr-3"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
         <View className="flex-1"><Text className="text-lg font-semibold text-foreground dark:text-foreground-dark">{item.name}</Text>
         <Text className="text-muted dark:text-muted-dark mt-1 text-sm">
           {item._count.issues} issues • {item._count.members} members
         </Text></View><MaterialIcons name="chevron-right" size={22} color="#94a3b8" />
-      </TouchableOpacity>
+      </Pressable>
     </Link>
   );
 
@@ -66,13 +66,12 @@ export default function ProjectsScreen() {
             autoFocus
           />
           <View className="flex-row justify-end space-x-3">
-            <TouchableOpacity onPress={() => setIsCreating(false)} className="px-4 py-2.5" activeOpacity={0.7}>
+            <Pressable onPress={() => setIsCreating(false)} className="px-4 py-2.5">
               <Text className="text-muted dark:text-muted-dark font-medium">Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
+            </Pressable>
+            <Pressable 
               onPress={handleCreate} 
-              className="bg-blue-600 px-4 py-2.5 rounded-lg shadow-sm"
-              activeOpacity={0.8}
+              className="bg-blue-600 px-4 py-2.5 rounded-lg"
               disabled={createProject.isPending}
             >
               {createProject.isPending ? (
@@ -80,17 +79,16 @@ export default function ProjectsScreen() {
               ) : (
                 <Text className="text-white font-medium">Create</Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       ) : (
-        <TouchableOpacity
-          className="bg-blue-600 px-4 py-3.5 rounded-xl mb-4 flex-row justify-center items-center shadow-sm"
+        <Pressable
+          className="bg-blue-600 px-4 py-3.5 rounded-xl mb-4 flex-row justify-center items-center"
           onPress={() => setIsCreating(true)}
-          activeOpacity={0.8}
         >
           <MaterialIcons name="add" size={20} color="#fff" /><Text className="text-white font-semibold text-base ml-1">New Project</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
 
       <FlatList

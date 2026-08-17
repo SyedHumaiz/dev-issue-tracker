@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useIssue, useProject, useUpdateStatus, useUpdatePriority, useUpdateAssignee, useCreateComment } from '@/src/api/hooks';
@@ -23,7 +23,7 @@ export default function IssueDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <ActivityIndicator size="large" />
       </View>
     );
@@ -31,7 +31,7 @@ export default function IssueDetailsScreen() {
 
   if (error || !issue) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <Text className="text-red-500">Failed to load issue details.</Text>
       </View>
     );
@@ -122,18 +122,17 @@ export default function IssueDetailsScreen() {
             value={commentBody}
             onChangeText={setCommentBody}
           />
-          <TouchableOpacity 
-            className="bg-blue-600 w-11 h-11 rounded-full justify-center items-center shadow-sm"
+          <Pressable 
+            className="h-11 w-11 items-center justify-center rounded-full bg-blue-600"
             onPress={handleCreateComment}
             disabled={createComment.isPending}
-            activeOpacity={0.75}
           >
             {createComment.isPending ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <Text className="text-white font-bold text-lg">↑</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
     </View>
