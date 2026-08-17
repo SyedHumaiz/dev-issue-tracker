@@ -104,29 +104,30 @@ export default function SignupScreen() {
           </View>
 
           <View>
-            <Text className="text-sm font-medium text-slate-700 mb-1">Job Title / Role *</Text>
+            <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Job Title / Role *</Text>
             {jobTitle === 'Other' ? (
               <View className="flex-row items-center space-x-2">
                 <TextInput
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
+                  className="flex-1 bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 text-foreground dark:text-foreground-dark"
+                  placeholderTextColor="#94a3b8"
                   placeholder="Enter your role"
                   value={customJobTitle}
                   onChangeText={(val) => {
                     setCustomJobTitle(val);
-                    setJobTitle(val); // implicitly update jobTitle but keeping "Other" conceptually handled
+                    setJobTitle(val);
                   }}
                   autoFocus
                 />
-                <TouchableOpacity onPress={() => setJobTitle('')} className="bg-slate-200 p-3 rounded-xl">
+                <TouchableOpacity onPress={() => setJobTitle('')} className="bg-slate-200 dark:bg-slate-700 p-3 rounded-xl">
                   <MaterialIcons name="close" size={20} color="#64748b" />
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex-row justify-between items-center"
+                className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl px-4 py-3 flex-row justify-between items-center"
                 onPress={() => setJobModalVisible(true)}
               >
-                <Text className={jobTitle ? "text-slate-900" : "text-slate-400"}>
+                <Text className={jobTitle ? "text-foreground dark:text-foreground-dark" : "text-muted dark:text-muted-dark"}>
                   {jobTitle || "Select your role"}
                 </Text>
                 <MaterialIcons name="arrow-drop-down" size={24} color="#94a3b8" />
@@ -135,10 +136,11 @@ export default function SignupScreen() {
           </View>
 
           <View>
-            <Text className="text-sm font-medium text-slate-700 mb-1">Password *</Text>
-            <View className="w-full bg-white border border-slate-200 rounded-xl flex-row items-center px-4">
+            <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Password *</Text>
+            <View className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl flex-row items-center px-4">
               <TextInput
-                className="flex-1 py-3 text-slate-900"
+                className="flex-1 py-3 text-foreground dark:text-foreground-dark"
+                placeholderTextColor="#94a3b8"
                 placeholder="••••••••"
                 secureTextEntry={!showPassword}
                 value={password}
@@ -151,10 +153,11 @@ export default function SignupScreen() {
           </View>
 
           <View>
-            <Text className="text-sm font-medium text-slate-700 mb-1">Confirm Password *</Text>
-            <View className="w-full bg-white border border-slate-200 rounded-xl flex-row items-center px-4">
+            <Text className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Confirm Password *</Text>
+            <View className="w-full bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-xl flex-row items-center px-4">
               <TextInput
-                className="flex-1 py-3 text-slate-900"
+                className="flex-1 py-3 text-foreground dark:text-foreground-dark"
+                placeholderTextColor="#94a3b8"
                 placeholder="••••••••"
                 secureTextEntry={!showConfirmPassword}
                 value={confirmPassword}

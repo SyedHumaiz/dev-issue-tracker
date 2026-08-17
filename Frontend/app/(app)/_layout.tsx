@@ -1,14 +1,17 @@
 import { Stack, Redirect } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { ActivityIndicator, View } from 'react-native';
+import { useColorScheme } from 'nativewind';
 
 export default function AppLayout() {
   const { token, isLoading } = useAuthStore();
+  const { colorScheme } = useColorScheme();
+  const dark = colorScheme === 'dark';
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" />
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
+        <ActivityIndicator size="large" color={dark ? '#60a5fa' : '#2563eb'} />
       </View>
     );
   }
@@ -18,10 +21,24 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: dark ? '#1f2937' : '#ffffff',
+        },
+        headerTintColor: dark ? '#f8fafc' : '#0f172a',
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
+        contentStyle: {
+          backgroundColor: dark ? '#111827' : '#f8fafc',
+        },
+      }}
+    >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="projects/[id]" options={{ title: 'Project Details' }} />
       <Stack.Screen name="issues/[id]" options={{ title: 'Issue Details' }} />
     </Stack>
   );
 }
+

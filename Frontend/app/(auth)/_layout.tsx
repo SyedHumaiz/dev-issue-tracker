@@ -7,7 +7,7 @@ export default function AuthLayout() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <ActivityIndicator size="large" />
       </View>
     );

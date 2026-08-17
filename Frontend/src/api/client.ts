@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuthStore } from '@/src/store/useAuthStore';
+import { getAccessToken, handleUnauthorized } from '@/src/api/session';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 console.log("API URL:", process.env.EXPO_PUBLIC_API_URL);
@@ -13,7 +13,7 @@ export const apiClient = axios.create({
 
 // Request interceptor: attach JWT token from Zustand
 apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
+  const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -26,10 +26,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       // Token is invalid or expired — force logout
-      const { token } = useAuthStore.getState();
-      if (token) {
-        await useAuthStore.getState().logout();
-      }
+      await handleUnauthorized();
     }
     return Promise.reject(error);
   },

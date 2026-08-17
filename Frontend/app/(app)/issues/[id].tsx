@@ -58,37 +58,37 @@ export default function IssueDetailsScreen() {
   };
 
   const renderComment = ({ item }: { item: any }) => (
-    <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100">
+    <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-3 shadow-sm border border-border dark:border-border-dark">
       <View className="flex-row justify-between items-center mb-2">
-        <Text className="font-semibold text-slate-900">{item.author.name}</Text>
-        <Text className="text-xs text-slate-500">{new Date(item.createdAt).toLocaleDateString()}</Text>
+        <Text className="font-semibold text-foreground dark:text-foreground-dark">{item.author.name}</Text>
+        <Text className="text-xs text-muted dark:text-muted-dark">{new Date(item.createdAt).toLocaleDateString()}</Text>
       </View>
-      <Text className="text-slate-700">{item.body}</Text>
+      <Text className="text-slate-700 dark:text-slate-200">{item.body}</Text>
     </View>
   );
 
   const renderActivity = ({ item }: { item: any }) => (
     <View className="flex-row mb-4 items-start">
-      <View className="w-8 h-8 rounded-full bg-slate-200 justify-center items-center mr-3 mt-1">
-        <Text className="text-xs font-bold text-slate-500">{item.actor.name.charAt(0)}</Text>
+      <View className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 justify-center items-center mr-3 mt-1">
+        <Text className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.actor.name.charAt(0)}</Text>
       </View>
-      <View className="flex-1 bg-white p-3 rounded-lg border border-slate-100">
-        <Text className="text-sm font-medium text-slate-900">{item.actor.name} <Text className="font-normal text-slate-600">{item.type.replace('_', ' ').toLowerCase()}</Text></Text>
-        <Text className="text-xs text-slate-400 mt-1">{new Date(item.createdAt).toLocaleString()}</Text>
+      <View className="flex-1 bg-surface dark:bg-surface-dark p-3 rounded-lg border border-border dark:border-border-dark">
+        <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{item.actor.name} <Text className="font-normal text-muted dark:text-muted-dark">{item.type.replace('_', ' ').toLowerCase()}</Text></Text>
+        <Text className="text-xs text-muted dark:text-muted-dark mt-1">{new Date(item.createdAt).toLocaleString()}</Text>
       </View>
     </View>
   );
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-white px-4 pt-6 pb-4 border-b border-slate-200">
-        <Text className="text-xl font-semibold text-slate-900 mb-3">{issue.title}</Text>
+    <View className="flex-1 bg-background dark:bg-background-dark">
+      <View className="bg-surface dark:bg-surface-dark px-4 pt-6 pb-4 border-b border-border dark:border-border-dark">
+        <Text className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-3">{issue.title}</Text>
         <View className="flex-row items-center gap-2 mb-4"><StatusBadge status={issue.status} /><PriorityBadge priority={issue.priority} /></View>
-        <View className="flex-row items-center mb-4"><Avatar user={issue.assignee} size="medium" /><View className="ml-3"><Text className="font-semibold text-slate-900">{issue.assignee?.name ?? 'Unassigned'}</Text><Text className="text-xs text-slate-500">{issue.assignee ? 'Project member' : 'Assign a project member'}</Text></View></View>
-        <Text className="text-slate-500 text-sm mb-3">Project: {issue.project.name}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">STATUS</Text>{[IssueStatus.OPEN, IssueStatus.IN_REVIEW, IssueStatus.CLOSED].map((status) => <TouchableOpacity key={status} onPress={() => handleStatusChange(status)} disabled={updateStatus.isPending} className={`rounded-full px-3 py-2 ${issue.status === status ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.status === status ? 'text-white' : 'text-slate-600'}`}>{status.replace('_', ' ')}</Text></TouchableOpacity>)}</View></ScrollView>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">PRIORITY</Text>{[Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL].map((priority) => <TouchableOpacity key={priority} onPress={() => handlePriorityChange(priority)} disabled={updatePriority.isPending} className={`rounded-full px-3 py-2 ${issue.priority === priority ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.priority === priority ? 'text-white' : 'text-slate-600'}`}>{priority}</Text></TouchableOpacity>)}</View></ScrollView>
-        {project && <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-1"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">ASSIGNEE</Text><TouchableOpacity onPress={() => handleAssigneeChange(null)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === null ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === null ? 'text-white' : 'text-slate-600'}`}>Unassigned</Text></TouchableOpacity>{project.members.map((member) => <TouchableOpacity key={member.userId} onPress={() => handleAssigneeChange(member.userId)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === member.userId ? 'text-white' : 'text-slate-600'}`}>{member.user.name}</Text></TouchableOpacity>)}</View></ScrollView>}
+        <View className="flex-row items-center mb-4"><Avatar user={issue.assignee} size="medium" /><View className="ml-3"><Text className="font-semibold text-foreground dark:text-foreground-dark">{issue.assignee?.name ?? 'Unassigned'}</Text><Text className="text-xs text-muted dark:text-muted-dark">{issue.assignee ? 'Project member' : 'Assign a project member'}</Text></View></View>
+        <Text className="text-muted dark:text-muted-dark text-sm mb-3">Project: {issue.project.name}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-muted dark:text-muted-dark">STATUS</Text>{[IssueStatus.OPEN, IssueStatus.IN_REVIEW, IssueStatus.CLOSED].map((status) => <TouchableOpacity key={status} onPress={() => handleStatusChange(status)} disabled={updateStatus.isPending} className={`rounded-full px-3 py-2 ${issue.status === status ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}><Text className={`text-xs font-semibold ${issue.status === status ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>{status.replace('_', ' ')}</Text></TouchableOpacity>)}</View></ScrollView>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-muted dark:text-muted-dark">PRIORITY</Text>{[Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL].map((priority) => <TouchableOpacity key={priority} onPress={() => handlePriorityChange(priority)} disabled={updatePriority.isPending} className={`rounded-full px-3 py-2 ${issue.priority === priority ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}><Text className={`text-xs font-semibold ${issue.priority === priority ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>{priority}</Text></TouchableOpacity>)}</View></ScrollView>
+        {project && <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-1"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-muted dark:text-muted-dark">ASSIGNEE</Text><TouchableOpacity onPress={() => handleAssigneeChange(null)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === null ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === null ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>Unassigned</Text></TouchableOpacity>{project.members.map((member) => <TouchableOpacity key={member.userId} onPress={() => handleAssigneeChange(member.userId)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === member.userId ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>{member.user.name}</Text></TouchableOpacity>)}</View></ScrollView>}
         
         <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'comments', label: `Comments (${issue.comments.length})` }, { value: 'activity', label: 'Activity' }]} />
       </View>
@@ -99,7 +99,7 @@ export default function IssueDetailsScreen() {
             data={issue.comments}
             keyExtractor={(item) => item.id}
             renderItem={renderComment}
-            ListEmptyComponent={<View className="mt-12 items-center"><View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"><MaterialIcons name="chat-bubble-outline" size={19} color="#2563eb" /></View><Text className="mt-3 font-semibold text-slate-800">No comments yet</Text><Text className="mt-1 text-center text-sm text-slate-500">Start the conversation on this issue.</Text></View>}
+            ListEmptyComponent={<View className="mt-12 items-center"><View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950"><MaterialIcons name="chat-bubble-outline" size={19} color="#2563eb" /></View><Text className="mt-3 font-semibold text-foreground dark:text-foreground-dark">No comments yet</Text><Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Start the conversation on this issue.</Text></View>}
             contentContainerStyle={{ paddingBottom: 96 }}
           />
         ) : (
@@ -107,16 +107,17 @@ export default function IssueDetailsScreen() {
             data={issue.activities}
             keyExtractor={(item) => item.id}
             renderItem={renderActivity}
-            ListEmptyComponent={<View className="mt-12 items-center"><View className="h-10 w-10 items-center justify-center rounded-full bg-slate-100"><MaterialIcons name="history" size={20} color="#64748b" /></View><Text className="mt-3 font-semibold text-slate-800">No activity yet</Text><Text className="mt-1 text-center text-sm text-slate-500">Updates to this issue will appear here.</Text></View>}
+            ListEmptyComponent={<View className="mt-12 items-center"><View className="h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800"><MaterialIcons name="history" size={20} color="#64748b" /></View><Text className="mt-3 font-semibold text-foreground dark:text-foreground-dark">No activity yet</Text><Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Updates to this issue will appear here.</Text></View>}
             contentContainerStyle={{ paddingBottom: 96 }}
           />
         )}
       </View>
 
       {activeTab === 'comments' && (
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 pb-5 pt-3 flex-row items-center">
+        <View className="absolute bottom-0 left-0 right-0 bg-surface dark:bg-surface-dark border-t border-border dark:border-border-dark px-4 pb-5 pt-3 flex-row items-center">
           <TextInput
-            className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-3 mr-3 text-slate-900"
+            className="flex-1 bg-slate-50 dark:bg-slate-800 border border-border dark:border-border-dark rounded-full px-4 py-3 mr-3 text-foreground dark:text-foreground-dark"
+            placeholderTextColor="#94a3b8"
             placeholder="Add a comment..."
             value={commentBody}
             onChangeText={setCommentBody}
@@ -138,3 +139,4 @@ export default function IssueDetailsScreen() {
     </View>
   );
 }
+

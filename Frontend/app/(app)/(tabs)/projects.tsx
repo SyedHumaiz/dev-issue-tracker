@@ -40,7 +40,7 @@ export default function ProjectsScreen() {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <ActivityIndicator size="large" />
-        <Text className="mt-3 text-sm text-slate-500">Loading projects…</Text>
+        <Text className="mt-3 text-sm text-muted dark:text-muted-dark">Loading projects…</Text>
       </View>
     );
   }
@@ -59,6 +59,7 @@ export default function ProjectsScreen() {
         <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-4 shadow-sm border border-border dark:border-border-dark">
           <TextInput
             className="border border-border dark:border-border-dark bg-slate-50 dark:bg-slate-800 rounded-lg px-4 py-3 text-foreground dark:text-foreground-dark mb-3"
+            placeholderTextColor="#94a3b8"
             placeholder="Project Name"
             value={newProjectName}
             onChangeText={setNewProjectName}
@@ -66,7 +67,7 @@ export default function ProjectsScreen() {
           />
           <View className="flex-row justify-end space-x-3">
             <TouchableOpacity onPress={() => setIsCreating(false)} className="px-4 py-2.5" activeOpacity={0.7}>
-              <Text className="text-slate-500 font-medium">Cancel</Text>
+              <Text className="text-muted dark:text-muted-dark font-medium">Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleCreate} 
@@ -99,9 +100,9 @@ export default function ProjectsScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
           <View className="items-center mt-12 bg-surface dark:bg-surface-dark rounded-xl border border-border dark:border-border-dark p-6">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
-            <Text className="mt-3 text-base font-semibold text-slate-800">No projects yet</Text>
-            <Text className="mt-1 text-center text-sm text-slate-500">Create a project to start tracking your work.</Text>
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
+            <Text className="mt-3 text-base font-semibold text-foreground dark:text-foreground-dark">No projects yet</Text>
+            <Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Create a project to start tracking your work.</Text>
           </View>
         }
       />

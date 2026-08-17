@@ -44,7 +44,7 @@ export default function ProjectDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <ActivityIndicator size="large" />
       </View>
     );
@@ -52,7 +52,7 @@ export default function ProjectDetailsScreen() {
 
   if (error || !project) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-50">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <Text className="text-red-500">Failed to load project details.</Text>
       </View>
     );
@@ -119,38 +119,16 @@ export default function ProjectDetailsScreen() {
         <IssueCard issue={item} onPress={() => {}} />
       </Link>
     );
-    const pStyle = getPriorityStyle(item.priority);
-    return (
-      <Link href={`/(app)/issues/${item.id}` as any} asChild>
-        <TouchableOpacity className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row justify-between items-center">
-          <View className="flex-1 mr-4">
-            <Text className="text-base font-semibold text-slate-900" numberOfLines={1}>{item.title}</Text>
-            <View className="flex-row items-center mt-2 space-x-2">
-              <View className={`px-2 py-1 rounded flex-row items-center space-x-1.5 ${pStyle.bg}`}>
-                <View className={`w-1.5 h-1.5 rounded-full ${pStyle.dot}`} />
-                <Text className={`text-xs font-medium ${pStyle.text}`}>{item.priority}</Text>
-              </View>
-              <View className={`px-2 py-1 rounded ${item.status === 'OPEN' ? 'bg-green-100' : 'bg-slate-100'}`}>
-                <Text className={`text-xs font-medium ${item.status === 'OPEN' ? 'text-green-700' : 'text-slate-600'}`}>{item.status}</Text>
-              </View>
-              <Text className="text-slate-400 text-xs">•</Text>
-              <Text className="text-slate-500 text-xs" numberOfLines={1}>Rep: {item.reporter.name}</Text>
-            </View>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
-        </TouchableOpacity>
-      </Link>
-    );
   };
 
   const renderMember = ({ item }: { item: any }) => (
-    <View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row justify-between items-center">
+    <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-3 shadow-sm border border-border dark:border-border-dark flex-row justify-between items-center">
       <View>
-        <Text className="text-base font-semibold text-slate-900">{item.user.name}</Text>
-        <Text className="text-slate-500 text-xs">{item.user.email}</Text>
+        <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{item.user.name}</Text>
+        <Text className="text-muted dark:text-muted-dark text-xs">{item.user.email}</Text>
       </View>
-      <View className={`px-3 py-1 rounded-full ${item.role === 'OWNER' ? 'bg-purple-100' : 'bg-blue-100'}`}>
-        <Text className={`text-xs font-medium ${item.role === 'OWNER' ? 'text-purple-700' : 'text-blue-700'}`}>{item.role}</Text>
+      <View className={`px-3 py-1 rounded-full ${item.role === 'OWNER' ? 'bg-purple-100 dark:bg-purple-950' : 'bg-blue-100 dark:bg-blue-950'}`}>
+        <Text className={`text-xs font-semibold ${item.role === 'OWNER' ? 'text-purple-700 dark:text-purple-300' : 'text-blue-700 dark:text-blue-300'}`}>{item.role}</Text>
       </View>
     </View>
   );
@@ -159,9 +137,12 @@ export default function ProjectDetailsScreen() {
   const showSearchResults = !selectedUser && debouncedQuery.trim().length >= 2;
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <View className="bg-white pt-6 border-b border-slate-200">
-        <View className="px-4 pb-4"><Text className="text-2xl font-semibold text-slate-900">{project.name}</Text><Text className="mt-1 text-sm text-slate-500">{project.issues.length} issues · {project.members.length} members</Text></View>
+    <View className="flex-1 bg-background dark:bg-background-dark">
+      <View className="bg-surface dark:bg-surface-dark pt-6 border-b border-border dark:border-border-dark">
+        <View className="px-4 pb-4">
+          <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{project.name}</Text>
+          <Text className="mt-1 text-sm text-muted dark:text-muted-dark">{project.issues.length} issues · {project.members.length} members</Text>
+        </View>
         <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'issues', label: 'Issues' }, { value: 'members', label: 'Members' }]} />
       </View>
 
@@ -169,32 +150,39 @@ export default function ProjectDetailsScreen() {
         <View className="flex-1 p-4">
           {isMember && (
             isCreatingIssue ? (
-              <View className="bg-white p-4 rounded-xl mb-4 shadow-sm border border-slate-100">
+              <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-4 shadow-sm border border-border dark:border-border-dark">
                 <TextInput
-                  className="border border-slate-200 rounded-lg px-4 py-3 text-slate-900 mb-3"
+                  className="border border-border dark:border-border-dark bg-slate-50 dark:bg-slate-800 rounded-lg px-4 py-3 text-foreground dark:text-foreground-dark mb-3"
+                  placeholderTextColor="#94a3b8"
                   placeholder="Issue Title"
                   value={issueTitle}
                   onChangeText={setIssueTitle}
                   autoFocus
                 />
-                <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Priority</Text>
+                <Text className="text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark mb-2">Priority</Text>
                 <View className="flex-row flex-wrap gap-2 mb-4">
                   {[Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL].map((priority) => (
-                    <TouchableOpacity key={priority} onPress={() => setIssuePriority(priority)} className={`px-3 py-2 rounded-full ${issuePriority === priority ? 'bg-blue-600' : 'bg-slate-100'}`}>
-                      <Text className={`text-xs font-semibold ${issuePriority === priority ? 'text-white' : 'text-slate-600'}`}>{priority}</Text>
+                    <TouchableOpacity key={priority} onPress={() => setIssuePriority(priority)} className={`px-3 py-2 rounded-full ${issuePriority === priority ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                      <Text className={`text-xs font-semibold ${issuePriority === priority ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>{priority}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-                <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Assignee</Text>
+                <Text className="text-xs font-semibold uppercase tracking-wide text-muted dark:text-muted-dark mb-2">Assignee</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
                   <View className="flex-row gap-2">
-                    <TouchableOpacity onPress={() => setIssueAssigneeId(null)} className={`px-3 py-2 rounded-full ${issueAssigneeId === null ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issueAssigneeId === null ? 'text-white' : 'text-slate-600'}`}>Unassigned</Text></TouchableOpacity>
-                    {project.members.map((member) => <TouchableOpacity key={member.userId} onPress={() => setIssueAssigneeId(member.userId)} className={`px-3 py-2 rounded-full ${issueAssigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issueAssigneeId === member.userId ? 'text-white' : 'text-slate-600'}`}>{member.user.name}</Text></TouchableOpacity>)}
+                    <TouchableOpacity onPress={() => setIssueAssigneeId(null)} className={`px-3 py-2 rounded-full ${issueAssigneeId === null ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                      <Text className={`text-xs font-semibold ${issueAssigneeId === null ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>Unassigned</Text>
+                    </TouchableOpacity>
+                    {project.members.map((member) => (
+                      <TouchableOpacity key={member.userId} onPress={() => setIssueAssigneeId(member.userId)} className={`px-3 py-2 rounded-full ${issueAssigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                        <Text className={`text-xs font-semibold ${issueAssigneeId === member.userId ? 'text-white' : 'text-muted dark:text-muted-dark'}`}>{member.user.name}</Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
                 </ScrollView>
                 <View className="flex-row justify-end space-x-3">
                   <TouchableOpacity onPress={() => setIsCreatingIssue(false)} className="px-4 py-2">
-                    <Text className="text-slate-500 font-medium">Cancel</Text>
+                    <Text className="text-muted dark:text-muted-dark font-medium">Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     onPress={handleCreateIssue} 
@@ -223,7 +211,15 @@ export default function ProjectDetailsScreen() {
             data={issues}
             keyExtractor={(item) => item.id}
             renderItem={renderIssue}
-            ListEmptyComponent={<View className="items-center mt-12 rounded-xl border border-slate-100 bg-white p-6"><View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50"><MaterialIcons name="assignment" size={20} color="#2563eb" /></View><Text className="mt-3 font-semibold text-slate-800">No issues yet</Text><Text className="mt-1 text-center text-sm text-slate-500">Create your first issue to start tracking work.</Text></View>}
+            ListEmptyComponent={
+              <View className="items-center mt-12 rounded-xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark p-6">
+                <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950">
+                  <MaterialIcons name="assignment" size={20} color="#2563eb" />
+                </View>
+                <Text className="mt-3 font-semibold text-foreground dark:text-foreground-dark">No issues yet</Text>
+                <Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Create your first issue to start tracking work.</Text>
+              </View>
+            }
           />
         </View>
       )}
@@ -232,13 +228,13 @@ export default function ProjectDetailsScreen() {
         <View className="flex-1 p-4">
           {isOwner && (
             isAddingMember ? (
-              <View className="bg-white p-4 rounded-xl mb-4 shadow-sm border border-slate-100">
+              <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-4 shadow-sm border border-border dark:border-border-dark">
                 {/* Search input or selected user display */}
                 {selectedUser ? (
-                  <View className="flex-row items-center border border-blue-200 bg-blue-50 rounded-lg px-4 py-3 mb-3">
+                  <View className="flex-row items-center border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950 rounded-lg px-4 py-3 mb-3">
                     <View className="flex-1">
-                      <Text className="text-base font-semibold text-slate-900">{selectedUser.name}</Text>
-                      <Text className="text-slate-500 text-xs">{selectedUser.email}</Text>
+                      <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{selectedUser.name}</Text>
+                      <Text className="text-muted dark:text-muted-dark text-xs">{selectedUser.email}</Text>
                     </View>
                     <TouchableOpacity onPress={handleClearSelection}>
                       <MaterialIcons name="close" size={20} color="#64748b" />
@@ -246,7 +242,8 @@ export default function ProjectDetailsScreen() {
                   </View>
                 ) : (
                   <TextInput
-                    className="border border-slate-200 rounded-lg px-4 py-3 text-slate-900 mb-1"
+                    className="border border-border dark:border-border-dark bg-slate-50 dark:bg-slate-800 rounded-lg px-4 py-3 text-foreground dark:text-foreground-dark mb-1"
+                    placeholderTextColor="#94a3b8"
                     placeholder="Search by name or email..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
@@ -257,7 +254,7 @@ export default function ProjectDetailsScreen() {
 
                 {/* Search results dropdown */}
                 {showSearchResults && (
-                  <View className="border border-slate-200 rounded-lg mb-3 max-h-48 overflow-hidden">
+                  <View className="border border-border dark:border-border-dark bg-surface dark:bg-surface-dark rounded-lg mb-3 max-h-48 overflow-hidden">
                     {isSearching ? (
                       <View className="py-4 items-center">
                         <ActivityIndicator size="small" />
@@ -267,20 +264,20 @@ export default function ProjectDetailsScreen() {
                         {filteredResults.map((user) => (
                           <TouchableOpacity
                             key={user.id}
-                            className="px-4 py-3 border-b border-slate-100"
+                            className="px-4 py-3 border-b border-border dark:border-border-dark"
                             onPress={() => {
                               setSelectedUser(user);
                               setSearchQuery('');
                             }}
                           >
-                            <Text className="text-sm font-semibold text-slate-900">{user.name}</Text>
-                            <Text className="text-xs text-slate-500">{user.email}</Text>
+                            <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark">{user.name}</Text>
+                            <Text className="text-xs text-muted dark:text-muted-dark">{user.email}</Text>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
                     ) : (
                       <View className="py-4 items-center">
-                        <Text className="text-slate-400 text-sm">No users found</Text>
+                        <Text className="text-muted dark:text-muted-dark text-sm">No users found</Text>
                       </View>
                     )}
                   </View>
@@ -288,22 +285,22 @@ export default function ProjectDetailsScreen() {
 
                 {/* Hint text when typing but not enough characters */}
                 {!selectedUser && searchQuery.length > 0 && searchQuery.trim().length < 2 && (
-                  <Text className="text-slate-400 text-xs mb-3 px-1">Type at least 2 characters to search</Text>
+                  <Text className="text-muted dark:text-muted-dark text-xs mb-3 px-1">Type at least 2 characters to search</Text>
                 )}
 
                 <View className="flex-row justify-end space-x-3">
                   <TouchableOpacity onPress={handleCancelAddMember} className="px-4 py-2">
-                    <Text className="text-slate-500 font-medium">Cancel</Text>
+                    <Text className="text-muted dark:text-muted-dark font-medium">Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     onPress={handleAddMember} 
-                    className={`px-4 py-2 rounded-lg ${selectedUser ? 'bg-blue-600' : 'bg-slate-300'}`}
+                    className={`px-4 py-2 rounded-lg ${selectedUser ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
                     disabled={!selectedUser || addMember.isPending}
                   >
                     {addMember.isPending ? (
                       <ActivityIndicator color="#fff" size="small" />
                     ) : (
-                      <Text className={`font-medium ${selectedUser ? 'text-white' : 'text-slate-500'}`}>Add</Text>
+                      <Text className={`font-medium ${selectedUser ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>Add</Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -328,3 +325,4 @@ export default function ProjectDetailsScreen() {
     </View>
   );
 }
+
