@@ -1,18 +1,59 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
-import { useLocalSearchParams, Link } from 'expo-router';
-import { useProject, useCreateIssue, useAddMember, useSearchUsers, useIssues } from '@/src/api/hooks';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useProject, useCreateIssue, useAddMember, useSearchUsers, useIssues, useUpdateStatus } from '@/src/api/hooks';
 import { useAuthStore } from '@/src/store/useAuthStore';
-import { IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
+import { IssueListItem, IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDebounce } from '@/src/utils/useDebounce';
 import { getErrorMessage } from '@/src/utils/error';
 import { IssueCard } from '@/src/components/IssueCard';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 import { useProjectRoom } from '@/src/hooks/useRealtime';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+
+function SwipeableIssueRow({ issue, onPress }: { issue: IssueListItem; onPress: () => void }) {
+  const swipeableRef = useRef<Swipeable>(null);
+  const updateStatus = useUpdateStatus(issue.id);
+  const nextStatus = issue.status === IssueStatus.CLOSED ? IssueStatus.OPEN : IssueStatus.CLOSED;
+  const actionLabel = nextStatus === IssueStatus.CLOSED ? 'Close' : 'Reopen';
+  const actionColor = nextStatus === IssueStatus.CLOSED ? 'bg-slate-600' : 'bg-emerald-600';
+
+  const handleStatusAction = async () => {
+    swipeableRef.current?.close();
+    try {
+      await updateStatus.mutateAsync({ status: nextStatus });
+    } catch (err) {
+      Alert.alert('Error', getErrorMessage(err));
+    }
+  };
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      friction={2}
+      rightThreshold={40}
+      overshootRight={false}
+      renderRightActions={() => (
+        <TouchableOpacity
+          className={`mb-2 w-24 items-center justify-center rounded-r-xl ${actionColor}`}
+          onPress={handleStatusAction}
+          disabled={updateStatus.isPending}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name={nextStatus === IssueStatus.CLOSED ? 'check-circle-outline' : 'replay'} size={21} color="#fff" />
+          <Text className="mt-1 text-xs font-semibold text-white">{actionLabel}</Text>
+        </TouchableOpacity>
+      )}
+    >
+      <IssueCard issue={issue} onPress={onPress} showSwipeHint />
+    </Swipeable>
+  );
+}
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   useProjectRoom(id);
   const { data: project, isLoading, error } = useProject(id);
   const { data: issues } = useIssues({ projectId: id });
@@ -115,13 +156,12 @@ export default function ProjectDetailsScreen() {
     }
   };
 
-  const renderIssue = ({ item }: { item: any }) => {
-    return (
-      <Link href={`/(app)/issues/${item.id}` as any} asChild>
-        <IssueCard issue={item} onPress={() => {}} />
-      </Link>
-    );
-  };
+  const renderIssue = ({ item }: { item: IssueListItem }) => (
+    <SwipeableIssueRow
+      issue={item}
+      onPress={() => router.push(`/(app)/issues/${item.id}` as any)}
+    />
+  );
 
   const renderMember = ({ item }: { item: any }) => (
     <View className="bg-surface dark:bg-surface-dark p-4 rounded-xl mb-3 shadow-sm border border-border dark:border-border-dark flex-row justify-between items-center">
@@ -327,4 +367,3 @@ export default function ProjectDetailsScreen() {
     </View>
   );
 }
-

@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { colorScheme, useColorScheme } from 'nativewind';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DarkTheme as NavDarkTheme, DefaultTheme as NavLightTheme, ThemeProvider } from '@react-navigation/native';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeStore } from '@/src/store/useThemeStore';
@@ -57,14 +58,16 @@ export default function RootLayout() {
   const isDark = resolvedScheme === 'dark';
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider value={isDark ? CustomDarkTheme : CustomLightTheme}>
-          <StatusBar style={isDark ? 'light' : 'dark'} />
-          <Slot />
-        </ThemeProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider value={isDark ? CustomDarkTheme : CustomLightTheme}>
+            <StatusBar style={isDark ? 'light' : 'dark'} />
+            <Slot />
+          </ThemeProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
