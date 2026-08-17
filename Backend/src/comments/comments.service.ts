@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ActivityType } from '@prisma/client';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   private async requireProjectMember(projectId: string, userId: string): Promise<void> {
     const membership = await this.prisma.projectMember.findUnique({
@@ -52,7 +56,7 @@ export class CommentsService {
     });
 
     // Auto-generate Activity record for added comment
-    await this.prisma.activity.create({
+    const activity = await this.prisma.activity.create({
       data: {
         type: ActivityType.COMMENT_ADDED,
         issueId,
@@ -62,7 +66,24 @@ export class CommentsService {
           snippet: dto.body.length > 50 ? dto.body.substring(0, 50) + '...' : dto.body,
         },
       },
+      include: {
+        actor: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
+      },
     });
+
+    this.realtimeService.emitCommentAdded(
+      issue.projectId,
+      issueId,
+      authorId,
+      comment,
+      activity,
+    );
 
     return comment;
   }

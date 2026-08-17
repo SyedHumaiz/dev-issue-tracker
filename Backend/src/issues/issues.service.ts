@@ -7,10 +7,14 @@ import { UpdateStatusDto } from './dto/update-status.dto';
 import { UpdatePriorityDto } from './dto/update-priority.dto';
 import { UpdateAssigneeDto } from './dto/update-assignee.dto';
 import { ActivityType } from '@prisma/client';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Injectable()
 export class IssuesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   private async requireProjectMember(projectId: string, userId: string): Promise<void> {
     const membership = await this.prisma.projectMember.findUnique({
@@ -77,6 +81,8 @@ export class IssuesService {
         },
       },
     });
+
+    this.realtimeService.emitIssueCreated(issue);
 
     return issue;
   }
@@ -171,38 +177,64 @@ export class IssuesService {
       },
     });
 
+    const actorSelect = { select: { id: true, name: true, avatarUrl: true } };
+
     // Record activity only when value actually changes
     if (dto.status !== undefined && dto.status !== existing.status) {
-      await this.prisma.activity.create({
+      const activity = await this.prisma.activity.create({
         data: {
           type: ActivityType.STATUS_CHANGED,
           issueId: id,
           actorId,
           meta: { before: existing.status, after: dto.status },
         },
+        include: { actor: actorSelect },
       });
+      this.realtimeService.emitIssueStatusChanged(
+        existing.projectId,
+        id,
+        actorId,
+        updatedIssue,
+        activity,
+      );
     }
 
     if (dto.priority !== undefined && dto.priority !== existing.priority) {
-      await this.prisma.activity.create({
+      const activity = await this.prisma.activity.create({
         data: {
           type: ActivityType.PRIORITY_CHANGED,
           issueId: id,
           actorId,
           meta: { before: existing.priority, after: dto.priority },
         },
+        include: { actor: actorSelect },
       });
+      this.realtimeService.emitIssuePriorityChanged(
+        existing.projectId,
+        id,
+        actorId,
+        updatedIssue,
+        activity,
+      );
     }
 
     if (dto.assigneeId !== undefined && dto.assigneeId !== existing.assigneeId) {
-      await this.prisma.activity.create({
+      const activity = await this.prisma.activity.create({
         data: {
           type: ActivityType.ASSIGNEE_CHANGED,
           issueId: id,
           actorId,
           meta: { before: existing.assigneeId, after: dto.assigneeId },
         },
+        include: { actor: actorSelect },
       });
+      this.realtimeService.emitIssueAssigneeChanged(
+        existing.projectId,
+        id,
+        actorId,
+        updatedIssue,
+        activity,
+      );
     }
 
     return updatedIssue;

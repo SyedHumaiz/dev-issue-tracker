@@ -6,12 +6,14 @@ import { IssuesModule } from './issues/issues.module';
 import { CommentsModule } from './comments/comments.module';
 import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
     PrismaModule,
     UsersModule,
     AuthModule,
+    RealtimeModule,
     ProjectsModule,
     IssuesModule,
     CommentsModule,

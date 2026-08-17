@@ -7,9 +7,11 @@ import { IssueStatus, Priority } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
 import { Avatar, PriorityBadge, StatusBadge } from '@/src/components/IssueCard';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
+import { useIssueRoom } from '@/src/hooks/useRealtime';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  useIssueRoom(id);
   const { data: issue, isLoading, error } = useIssue(id);
   const { data: project } = useProject(issue?.projectId ?? '');
   

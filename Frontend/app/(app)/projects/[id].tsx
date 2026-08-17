@@ -9,9 +9,11 @@ import { useDebounce } from '@/src/utils/useDebounce';
 import { getErrorMessage } from '@/src/utils/error';
 import { IssueCard } from '@/src/components/IssueCard';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
+import { useProjectRoom } from '@/src/hooks/useRealtime';
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  useProjectRoom(id);
   const { data: project, isLoading, error } = useProject(id);
   const { data: issues } = useIssues({ projectId: id });
   const createIssue = useCreateIssue();

@@ -2,11 +2,14 @@ import { Stack, Redirect } from 'expo-router';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useColorScheme } from 'nativewind';
+import { useRealtimeConnection } from '@/src/hooks/useRealtime';
 
 export default function AppLayout() {
   const { token, isLoading } = useAuthStore();
   const { colorScheme } = useColorScheme();
   const dark = colorScheme === 'dark';
+
+  useRealtimeConnection();
 
   if (isLoading) {
     return (

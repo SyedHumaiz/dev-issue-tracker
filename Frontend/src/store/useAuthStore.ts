@@ -3,6 +3,7 @@ import { User } from '@/src/types';
 import { saveToken, getToken, deleteToken } from '@/src/utils/storage';
 import { apiClient } from '@/src/api/client';
 import { setAccessToken, setUnauthorizedHandler } from '@/src/api/session';
+import { socketService } from '@/src/api/socket';
 
 interface AuthState {
   user: User | null;
@@ -27,6 +28,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    socketService.disconnect();
     await deleteToken();
     setAccessToken(null);
     set({ token: null, user: null, isLoading: false });

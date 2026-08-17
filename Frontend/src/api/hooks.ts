@@ -13,16 +13,10 @@ import {
   UpdateProfileRequest,
 } from '@/src/types';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { queryKeys } from '@/src/api/queryKeys';
 
 // ── Query Keys ──
-export const queryKeys = {
-  projects: ['projects'] as const,
-  project: (id: string) => ['projects', id] as const,
-  issues: (filter?: IssueFilter) => ['issues', filter] as const,
-  issue: (id: string) => ['issues', id] as const,
-  comments: (issueId: string) => ['comments', issueId] as const,
-  activity: (issueId: string) => ['activity', issueId] as const,
-};
+export { queryKeys } from '@/src/api/queryKeys';
 
 // ── Users ──
 export function useUpdateProfile() {
