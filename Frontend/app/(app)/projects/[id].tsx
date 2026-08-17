@@ -1,16 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, Link } from 'expo-router';
-import { useProject, useCreateIssue, useAddMember, useSearchUsers } from '@/src/api/hooks';
+import { useProject, useCreateIssue, useAddMember, useSearchUsers, useIssues } from '@/src/api/hooks';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDebounce } from '@/src/utils/useDebounce';
 import { getErrorMessage } from '@/src/utils/error';
+import { IssueCard } from '@/src/components/IssueCard';
 
 export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: project, isLoading, error } = useProject(id);
+  const { data: issues } = useIssues({ projectId: id });
   const createIssue = useCreateIssue();
   const addMember = useAddMember(id);
   const currentUser = useAuthStore((state) => state.user);
@@ -20,6 +22,8 @@ export default function ProjectDetailsScreen() {
   // Issue Creation State
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
   const [issueTitle, setIssueTitle] = useState('');
+  const [issuePriority, setIssuePriority] = useState<Priority>(Priority.MEDIUM);
+  const [issueAssigneeId, setIssueAssigneeId] = useState<string | null>(null);
 
   // Member Addition State
   const [isAddingMember, setIsAddingMember] = useState(false);
@@ -63,9 +67,12 @@ export default function ProjectDetailsScreen() {
         title: issueTitle,
         projectId: project.id,
         status: IssueStatus.OPEN,
-        priority: Priority.MEDIUM,
+        priority: issuePriority,
+        assigneeId: issueAssigneeId,
       });
       setIssueTitle('');
+      setIssuePriority(Priority.MEDIUM);
+      setIssueAssigneeId(null);
       setIsCreatingIssue(false);
     } catch (err: any) {
       Alert.alert('Error', getErrorMessage(err));
@@ -106,6 +113,11 @@ export default function ProjectDetailsScreen() {
   };
 
   const renderIssue = ({ item }: { item: any }) => {
+    return (
+      <Link href={`/(app)/issues/${item.id}` as any} asChild>
+        <IssueCard issue={item} onPress={() => {}} />
+      </Link>
+    );
     const pStyle = getPriorityStyle(item.priority);
     return (
       <Link href={`/(app)/issues/${item.id}` as any} asChild>
@@ -178,6 +190,21 @@ export default function ProjectDetailsScreen() {
                   onChangeText={setIssueTitle}
                   autoFocus
                 />
+                <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Priority</Text>
+                <View className="flex-row flex-wrap gap-2 mb-4">
+                  {[Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL].map((priority) => (
+                    <TouchableOpacity key={priority} onPress={() => setIssuePriority(priority)} className={`px-3 py-2 rounded-full ${issuePriority === priority ? 'bg-blue-600' : 'bg-slate-100'}`}>
+                      <Text className={`text-xs font-semibold ${issuePriority === priority ? 'text-white' : 'text-slate-600'}`}>{priority}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Assignee</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                  <View className="flex-row gap-2">
+                    <TouchableOpacity onPress={() => setIssueAssigneeId(null)} className={`px-3 py-2 rounded-full ${issueAssigneeId === null ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issueAssigneeId === null ? 'text-white' : 'text-slate-600'}`}>Unassigned</Text></TouchableOpacity>
+                    {project.members.map((member) => <TouchableOpacity key={member.userId} onPress={() => setIssueAssigneeId(member.userId)} className={`px-3 py-2 rounded-full ${issueAssigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issueAssigneeId === member.userId ? 'text-white' : 'text-slate-600'}`}>{member.user.name}</Text></TouchableOpacity>)}
+                  </View>
+                </ScrollView>
                 <View className="flex-row justify-end space-x-3">
                   <TouchableOpacity onPress={() => setIsCreatingIssue(false)} className="px-4 py-2">
                     <Text className="text-slate-500 font-medium">Cancel</Text>
@@ -206,7 +233,7 @@ export default function ProjectDetailsScreen() {
           )}
 
           <FlatList
-            data={project.issues}
+            data={issues}
             keyExtractor={(item) => item.id}
             renderItem={renderIssue}
             ListEmptyComponent={<Text className="text-slate-500 text-center mt-10">No issues yet.</Text>}

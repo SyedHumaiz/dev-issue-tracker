@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useIssue, useUpdateStatus, useCreateComment } from '@/src/api/hooks';
-import { IssueStatus } from '@/src/types';
+import { useIssue, useProject, useUpdateStatus, useUpdatePriority, useUpdateAssignee, useCreateComment } from '@/src/api/hooks';
+import { IssueStatus, Priority } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
+import { Avatar, PriorityBadge, StatusBadge } from '@/src/components/IssueCard';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: issue, isLoading, error } = useIssue(id);
+  const { data: project } = useProject(issue?.projectId ?? '');
   
   const updateStatus = useUpdateStatus(id);
+  const updatePriority = useUpdatePriority(id);
+  const updateAssignee = useUpdateAssignee(id);
   const createComment = useCreateComment(id);
 
   const [activeTab, setActiveTab] = useState<'comments' | 'activity'>('comments');
@@ -31,14 +35,15 @@ export default function IssueDetailsScreen() {
     );
   }
 
-  const handleStatusToggle = async () => {
-    const newStatus = issue.status === IssueStatus.OPEN ? IssueStatus.CLOSED : IssueStatus.OPEN;
+  const handleStatusChange = async (status: IssueStatus) => {
     try {
-      await updateStatus.mutateAsync({ status: newStatus });
+      await updateStatus.mutateAsync({ status });
     } catch (err: any) {
       Alert.alert('Error', getErrorMessage(err));
     }
   };
+  const handlePriorityChange = async (priority: Priority) => { try { await updatePriority.mutateAsync({ priority }); } catch (err) { Alert.alert('Error', getErrorMessage(err)); } };
+  const handleAssigneeChange = async (assigneeId: string | null) => { try { await updateAssignee.mutateAsync({ assigneeId }); } catch (err) { Alert.alert('Error', getErrorMessage(err)); } };
 
   const handleCreateComment = async () => {
     if (!commentBody.trim()) return;
@@ -75,23 +80,13 @@ export default function IssueDetailsScreen() {
   return (
     <View className="flex-1 bg-slate-50">
       <View className="bg-white px-4 pt-6 pb-4 border-b border-slate-200">
-        <View className="flex-row justify-between items-start mb-2">
-          <Text className="text-xl font-bold text-slate-900 flex-1 mr-4">{issue.title}</Text>
-          <TouchableOpacity 
-            className={`px-3 py-1.5 rounded-full ${issue.status === 'OPEN' ? 'bg-green-100' : 'bg-slate-200'}`}
-            onPress={handleStatusToggle}
-            disabled={updateStatus.isPending}
-          >
-            {updateStatus.isPending ? (
-              <ActivityIndicator size="small" />
-            ) : (
-              <Text className={`text-xs font-bold ${issue.status === 'OPEN' ? 'text-green-700' : 'text-slate-700'}`}>
-                {issue.status}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-        <Text className="text-slate-500 text-sm mb-4">Project: {issue.project.name}</Text>
+        <Text className="text-xl font-semibold text-slate-900 mb-3">{issue.title}</Text>
+        <View className="flex-row items-center gap-2 mb-4"><StatusBadge status={issue.status} /><PriorityBadge priority={issue.priority} /></View>
+        <View className="flex-row items-center mb-4"><Avatar user={issue.assignee} size="medium" /><View className="ml-3"><Text className="font-semibold text-slate-900">{issue.assignee?.name ?? 'Unassigned'}</Text><Text className="text-xs text-slate-500">{issue.assignee ? 'Project member' : 'Assign a project member'}</Text></View></View>
+        <Text className="text-slate-500 text-sm mb-3">Project: {issue.project.name}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">STATUS</Text>{[IssueStatus.OPEN, IssueStatus.IN_REVIEW, IssueStatus.CLOSED].map((status) => <TouchableOpacity key={status} onPress={() => handleStatusChange(status)} disabled={updateStatus.isPending} className={`rounded-full px-3 py-2 ${issue.status === status ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.status === status ? 'text-white' : 'text-slate-600'}`}>{status.replace('_', ' ')}</Text></TouchableOpacity>)}</View></ScrollView>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">PRIORITY</Text>{[Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL].map((priority) => <TouchableOpacity key={priority} onPress={() => handlePriorityChange(priority)} disabled={updatePriority.isPending} className={`rounded-full px-3 py-2 ${issue.priority === priority ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.priority === priority ? 'text-white' : 'text-slate-600'}`}>{priority}</Text></TouchableOpacity>)}</View></ScrollView>
+        {project && <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-1"><View className="flex-row gap-2"><Text className="self-center text-xs font-semibold text-slate-500">ASSIGNEE</Text><TouchableOpacity onPress={() => handleAssigneeChange(null)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === null ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === null ? 'text-white' : 'text-slate-600'}`}>Unassigned</Text></TouchableOpacity>{project.members.map((member) => <TouchableOpacity key={member.userId} onPress={() => handleAssigneeChange(member.userId)} disabled={updateAssignee.isPending} className={`rounded-full px-3 py-2 ${issue.assigneeId === member.userId ? 'bg-blue-600' : 'bg-slate-100'}`}><Text className={`text-xs font-semibold ${issue.assigneeId === member.userId ? 'text-white' : 'text-slate-600'}`}>{member.user.name}</Text></TouchableOpacity>)}</View></ScrollView>}
         
         <View className="flex-row space-x-6 border-t border-slate-100 pt-3">
           <TouchableOpacity 

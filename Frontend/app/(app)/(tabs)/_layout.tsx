@@ -12,6 +12,10 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="my-work"
+        options={{ title: 'My Work', tabBarIcon: ({ color }) => <MaterialIcons name="assignment" size={24} color={color} /> }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

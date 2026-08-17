@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { useProjects, useCreateProject } from '@/src/api/hooks';
 import { ProjectListItem } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function ProjectsScreen() {
   const { data: projects, isLoading, error } = useProjects();
@@ -25,11 +26,12 @@ export default function ProjectsScreen() {
 
   const renderItem = ({ item }: { item: ProjectListItem }) => (
     <Link href={`/(app)/projects/${item.id}` as any} asChild>
-      <TouchableOpacity className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100">
-        <Text className="text-lg font-semibold text-slate-900">{item.name}</Text>
+      <TouchableOpacity className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-slate-100 flex-row items-center">
+        <View className="w-10 h-10 rounded-lg bg-blue-100 justify-center items-center mr-3"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
+        <View className="flex-1"><Text className="text-lg font-semibold text-slate-900">{item.name}</Text>
         <Text className="text-slate-500 mt-1 text-sm">
           {item._count.issues} issues • {item._count.members} members
-        </Text>
+        </Text></View><MaterialIcons name="chevron-right" size={22} color="#94a3b8" />
       </TouchableOpacity>
     </Link>
   );
