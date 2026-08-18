@@ -11,6 +11,7 @@ import { IssueCard } from '@/src/components/IssueCard';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 import { useProjectRoom } from '@/src/hooks/useRealtime';
 import { EmptyState } from '@/src/components/EmptyState';
+import { SwipeableTabView } from '@/src/components/SwipeableTabView';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 function SwipeableIssueRow({ issue, onPress }: { issue: IssueListItem; onPress: () => void }) {
@@ -63,6 +64,7 @@ export default function ProjectDetailsScreen() {
   const currentUser = useAuthStore((state) => state.user);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'issues' | 'members'>('overview');
+  const projectTabs = ['overview', 'issues', 'members'] as const;
   const { data: stats, isLoading: isStatsLoading } = useProjectStats(id);
   const updateMemberRole = useUpdateMemberRole(id);
   const removeMember = useRemoveMember(id);
@@ -236,6 +238,7 @@ export default function ProjectDetailsScreen() {
         <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'issues', label: 'Issues' }, { value: 'members', label: 'Members' }]} />
       </View>
 
+      <SwipeableTabView activeIndex={projectTabs.indexOf(activeTab)} tabCount={projectTabs.length} onChange={(index) => setActiveTab(projectTabs[index]!)}>
       {activeTab === 'overview' && (
         <ScrollView className="flex-1 p-4">
           <View className="rounded-xl border border-border bg-surface p-5 dark:border-border-dark dark:bg-surface-dark">
@@ -425,6 +428,7 @@ export default function ProjectDetailsScreen() {
           />
         </View>
       )}
+      </SwipeableTabView>
     </View>
   );
 }

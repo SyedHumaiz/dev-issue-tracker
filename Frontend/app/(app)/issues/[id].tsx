@@ -12,6 +12,7 @@ import { useAuthStore } from '@/src/store/useAuthStore';
 import { EmptyState } from '@/src/components/EmptyState';
 import { formatActivity, formatRelativeTime } from '@/src/utils/activity';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
+import { SwipeableTabView } from '@/src/components/SwipeableTabView';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,6 +31,7 @@ export default function IssueDetailsScreen() {
   const createComment = useCreateComment(id);
 
   const [activeTab, setActiveTab] = useState<'comments' | 'activity'>('comments');
+  const issueTabs = ['comments', 'activity'] as const;
   const [commentBody, setCommentBody] = useState('');
   const [isPropertiesModalVisible, setPropertiesModalVisible] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(Keyboard.isVisible());
@@ -197,6 +199,7 @@ export default function IssueDetailsScreen() {
         </View>
 
         {/* Scrollable Content Area */}
+        <SwipeableTabView activeIndex={issueTabs.indexOf(activeTab)} tabCount={issueTabs.length} onChange={(index) => setActiveTab(issueTabs[index]!)}>
         <View className="flex-1 px-4 pt-3">
           {activeTab === 'comments' ? <FlatList
             ref={commentsListRef}
@@ -219,6 +222,7 @@ export default function IssueDetailsScreen() {
             renderItem={renderActivity}
             contentContainerStyle={{ paddingBottom: 16, flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
+            maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
             onEndReached={() => { if (activity.hasNextPage && !activity.isFetchingNextPage) activity.fetchNextPage(); }}
             onEndReachedThreshold={0.6}
             initialNumToRender={12}
@@ -228,6 +232,7 @@ export default function IssueDetailsScreen() {
             ListFooterComponent={activity.isFetchingNextPage ? <View className="py-4"><ActivityIndicator color="#2563eb" size="small" /></View> : activity.isFetchNextPageError ? <TouchableOpacity className="items-center py-4" onPress={() => activity.fetchNextPage()}><Text className="text-sm font-semibold text-blue-600">Retry loading activity</Text></TouchableOpacity> : null}
           />}
         </View>
+        </SwipeableTabView>
 
         {/* Bottom Comment Bar with Bottom Safe Area Inset & In-Flow Flex Layout */}
         {activeTab === 'comments' && <View 

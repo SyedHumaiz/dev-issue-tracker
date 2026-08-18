@@ -28,7 +28,7 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: dark ? '#1f2937' : '#ffffff',
+          backgroundColor: dark ? '#171718' : '#ffffff',
         },
         headerTintColor: dark ? '#f8fafc' : '#0f172a',
         headerRight: () => <NotificationBell />,
@@ -36,7 +36,7 @@ export default function AppLayout() {
           fontWeight: '600',
         },
         contentStyle: {
-          backgroundColor: dark ? '#111827' : '#f8fafc',
+          backgroundColor: dark ? '#0F0F10' : '#f8fafc',
         },
       }}
     >
