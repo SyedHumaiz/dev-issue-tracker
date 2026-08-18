@@ -27,6 +27,8 @@ import {
   CursorPage,
   Notification,
   GithubStatus,
+  GithubRepo,
+  GithubPull,
 } from '@/src/types';
 
 // ── Auth ──
@@ -52,6 +54,12 @@ export const usersApi = {
     apiClient.patch<User>('/users/profile', data),
 
   githubStatus: () => apiClient.get<GithubStatus>('/users/me/github-status'),
+};
+
+export const githubApi = {
+  repos: () => apiClient.get<GithubRepo[]>('/github/repos'),
+  pulls: (owner: string, repo: string) =>
+    apiClient.get<GithubPull[]>(`/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls`),
 };
 
 // ── Projects ──

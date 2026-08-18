@@ -8,6 +8,7 @@ import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { GithubModule } from './github/github.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     CommentsModule,
     ActivityModule,
     NotificationsModule,
+    GithubModule,
   ],
 })
 export class AppModule {}

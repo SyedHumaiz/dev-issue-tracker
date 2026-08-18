@@ -278,6 +278,25 @@ export interface GithubStatus {
   username: string | null;
 }
 
+export interface GithubRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  private: boolean;
+  updatedAt: string;
+}
+
+export interface GithubPull {
+  id: number;
+  number: number;
+  title: string;
+  state: string;
+  author: { login: string; avatarUrl: string };
+  htmlUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IssueFilter {
   projectId?: string;
   status?: IssueStatus;

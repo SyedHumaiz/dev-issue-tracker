@@ -11,4 +11,6 @@ export const queryKeys = {
   notifications: ['notifications'] as const,
   unreadNotifications: ['notifications', 'unread-count'] as const,
   githubStatus: ['users', 'me', 'github-status'] as const,
+  githubRepos: ['github', 'repos'] as const,
+  githubPulls: (owner: string, repo: string) => ['github', 'repos', owner, repo, 'pulls'] as const,
 };

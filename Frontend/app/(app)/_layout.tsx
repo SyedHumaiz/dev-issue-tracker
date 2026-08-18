@@ -44,6 +44,8 @@ export default function AppLayout() {
       <Stack.Screen name="projects/[id]" options={{ title: 'Project Details' }} />
       <Stack.Screen name="issues/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
+      <Stack.Screen name="github/repos" options={{ title: 'GitHub Repositories' }} />
+      <Stack.Screen name="github/repos/[owner]/[repo]/pulls" options={{ title: 'Open Pull Requests' }} />
     </Stack>
   );
 }

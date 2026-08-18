@@ -43,15 +43,18 @@ export class AuthController {
   @UseGuards(AuthGuard('github'))
   async githubCallback(@Req() request: Request, @Res() response: Response) {
     const state = typeof request.query.state === 'string' ? request.query.state : '';
+    let redirectUri: string | undefined;
     try {
-      const payload = await this.jwtService.verifyAsync<{ sub: string; purpose: string }>(state);
-      if (payload.purpose !== 'github-link') throw new UnauthorizedException('Invalid GitHub linking state');
+      const payload = await this.jwtService.verifyAsync<{ sub: string; purpose: string; redirectUri: string }>(state);
+      if (payload.purpose !== 'github-link' || !payload.redirectUri) throw new UnauthorizedException('Invalid GitHub linking state');
+      redirectUri = payload.redirectUri;
       const github = request.user as { githubId: string; githubUsername: string; accessToken: string };
       await this.authService.connectGithub(payload.sub, github);
-      return response.redirect('devtracker://github-connected?status=success');
+      return response.redirect(`${redirectUri}?status=success`);
     } catch {
       // The client distinguishes this from a completed link and never shows a false-positive state.
-      return response.redirect('devtracker://github-connected?status=error&reason=link_failed');
+      if (!redirectUri) return response.status(HttpStatus.BAD_REQUEST).json({ message: 'Invalid GitHub linking state' });
+      return response.redirect(`${redirectUri}?status=error&reason=link_failed`);
     }
   }
 

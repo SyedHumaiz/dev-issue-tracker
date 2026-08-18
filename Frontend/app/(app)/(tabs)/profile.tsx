@@ -2,33 +2,46 @@ import React, { useCallback } from 'react';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { ProfileRedesign } from '@/src/components/ProfileRedesign';
 import * as WebBrowser from 'expo-web-browser';
-import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
+import { Alert } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDisconnectGithub, useGithubStatus } from '@/src/api/hooks';
+import { queryKeys } from '@/src/api/queryKeys';
 import { getErrorMessage } from '@/src/utils/error';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 export default function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
   const githubStatus = useGithubStatus();
   const disconnectGithub = useDisconnectGithub();
 
-  // The auth browser can resume the app before the profile query observes a mount/focus transition.
-  // Always re-check when this tab becomes active so returning from OAuth cannot leave stale UI.
+  const refreshGithubStatus = useCallback(async () => {
+    // Invalidation refetches the mounted query and keeps it stale if this screen remounts later.
+    await queryClient.invalidateQueries({ queryKey: queryKeys.githubStatus, exact: true });
+  }, [queryClient]);
+
+  // WebBrowser can resume the app without causing a React Navigation focus transition.
+  // Refresh on navigation focus as a second path for returns from OAuth and normal tab changes.
   useFocusEffect(useCallback(() => {
-    if (token) void githubStatus.refetch();
-  }, [token, githubStatus.refetch]));
+    if (token) void refreshGithubStatus();
+  }, [token, refreshGithubStatus]));
 
   const connectGithub = async () => {
     if (!token) return;
     const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+    const redirectUri = Linking.createURL('github-connected');
     try {
-      const result = await WebBrowser.openAuthSessionAsync(`${apiUrl}/auth/github?token=${encodeURIComponent(token)}`, 'devtracker://github-connected');
+      const result = await WebBrowser.openAuthSessionAsync(
+        `${apiUrl}/auth/github?token=${encodeURIComponent(token)}&redirectUri=${encodeURIComponent(redirectUri)}`,
+        redirectUri,
+      );
       if (result.type === 'success') {
         const params = new URL(result.url).searchParams;
-        if (params.get('status') === 'success') await githubStatus.refetch();
+        if (params.get('status') === 'success') await refreshGithubStatus();
         else Alert.alert('GitHub connection failed', 'GitHub could not be linked. Please try again.');
       }
     } catch (error) {
@@ -44,5 +57,5 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   const busy = githubStatus.isFetching || disconnectGithub.isPending;
-  return <View className="flex-1"><ProfileRedesign user={user} onLogout={logout} githubStatus={githubStatus.data} onConnectGithub={connectGithub} onDisconnectGithub={removeGithub} githubLoading={busy} /><View className="absolute bottom-5 left-5 right-5 rounded-2xl border border-border bg-surface p-4 shadow-lg dark:border-border-dark dark:bg-surface-dark"><View className="flex-row items-center"><FontAwesome name="github" size={22} color="#94a3b8" /><View className="ml-3 flex-1"><Text className="font-semibold text-foreground dark:text-foreground-dark">GitHub integration</Text><Text className="mt-0.5 text-xs text-muted dark:text-muted-dark">{githubStatus.data?.connected ? `Connected as ${githubStatus.data.username}` : 'Connect to enable repository features'}</Text></View>{busy ? <ActivityIndicator color="#2563eb" /> : githubStatus.data?.connected ? <Pressable onPress={removeGithub} className="rounded-lg border border-red-200 px-3 py-2 dark:border-red-900"><Text className="text-xs font-semibold text-red-500">Disconnect</Text></Pressable> : <Pressable onPress={connectGithub} className="rounded-lg bg-blue-600 px-3 py-2"><Text className="text-xs font-semibold text-white">Connect</Text></Pressable>}</View></View></View>;
+  return <ProfileRedesign user={user} onLogout={logout} githubStatus={githubStatus.data} onConnectGithub={connectGithub} onDisconnectGithub={removeGithub} onBrowseGithubRepos={() => router.push('/(app)/github/repos' as any)} githubLoading={busy} />;
 }
