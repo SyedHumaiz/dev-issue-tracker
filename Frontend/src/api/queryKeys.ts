@@ -7,4 +7,6 @@ export const queryKeys = {
   issue: (id: string) => ['issues', id] as const,
   comments: (issueId: string) => ['comments', issueId] as const,
   activity: (issueId: string) => ['activity', issueId] as const,
+  notifications: ['notifications'] as const,
+  unreadNotifications: ['notifications', 'unread-count'] as const,
 };

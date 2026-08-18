@@ -117,6 +117,7 @@ class SocketService {
       'issue.priority_changed',
       'issue.assignee_changed',
       'comment.added',
+      'notification.created',
     ] as const;
 
     events.forEach((event) => {

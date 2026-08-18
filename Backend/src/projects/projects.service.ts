@@ -8,11 +8,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member.dto';
-import { Role } from '@prisma/client';
+import { NotificationType, Role } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private async requireProjectMember(projectId: string, userId: string): Promise<void> {
     const membership = await this.prisma.projectMember.findUnique({
@@ -122,7 +126,7 @@ export class ProjectsService {
   }
 
   async addMember(projectId: string, dto: AddMemberDto, actorId: string) {
-    await this.findOne(projectId, actorId);
+    const project = await this.findOne(projectId, actorId);
 
     // Only OWNERs can add members
     await this.requireOwner(projectId, actorId);
@@ -140,7 +144,7 @@ export class ProjectsService {
       throw new ConflictException('User is already a member of this project');
     }
 
-    return this.prisma.projectMember.create({
+    const member = await this.prisma.projectMember.create({
       data: {
         projectId,
         userId: dto.userId,
@@ -157,6 +161,15 @@ export class ProjectsService {
         },
       },
     });
+    await this.notificationsService.create({
+      recipientId: dto.userId,
+      actorId,
+      type: NotificationType.PROJECT_INVITED,
+      title: 'Added to a project',
+      message: `You were added to ${project.name}.`,
+      projectId,
+    });
+    return member;
   }
 
   async updateMemberRole(

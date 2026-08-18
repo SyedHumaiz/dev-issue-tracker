@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectsApi, issuesApi, commentsApi, activityApi, usersApi } from '@/src/api/endpoints';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { projectsApi, issuesApi, commentsApi, activityApi, usersApi, notificationsApi } from '@/src/api/endpoints';
 import {
   CreateProjectRequest,
   AddMemberRequest,
@@ -189,5 +189,52 @@ export function useActivity(issueId: string) {
     queryKey: queryKeys.activity(issueId),
     queryFn: async () => (await activityApi.list(issueId)).data,
     enabled: !!issueId,
+  });
+}
+
+export function useNotifications() {
+  return useInfiniteQuery({
+    queryKey: queryKeys.notifications,
+    queryFn: ({ pageParam }) => notificationsApi.list({ cursor: pageParam, limit: 20 }).then((res) => res.data),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+  });
+}
+
+export function useUnreadNotificationCount() {
+  return useQuery({
+    queryKey: queryKeys.unreadNotifications,
+    queryFn: () => notificationsApi.unreadCount().then((res) => res.data),
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => notificationsApi.markRead(id),
+    onSuccess: (_, id) => {
+      qc.setQueryData(queryKeys.notifications, (current: any) => current ? {
+        ...current,
+        pages: current.pages.map((page: any) => ({
+          ...page,
+          items: page.items.map((item: any) => item.id === id ? { ...item, isRead: true } : item),
+        })),
+      } : current);
+      qc.setQueryData<{ count: number }>(queryKeys.unreadNotifications, (current) => current ? { count: Math.max(0, current.count - 1) } : current);
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => {
+      qc.setQueryData(queryKeys.notifications, (current: any) => current ? {
+        ...current,
+        pages: current.pages.map((page: any) => ({ ...page, items: page.items.map((item: any) => ({ ...item, isRead: true })) })),
+      } : current);
+      qc.setQueryData(queryKeys.unreadNotifications, { count: 0 });
+    },
   });
 }

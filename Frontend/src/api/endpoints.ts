@@ -22,6 +22,7 @@ import {
   Comment,
   CreateCommentRequest,
   Activity,
+  Notification,
 } from '@/src/types';
 
 // ── Auth ──
@@ -100,4 +101,12 @@ export const commentsApi = {
 export const activityApi = {
   list: (issueId: string) =>
     apiClient.get<Activity[]>(`/issues/${issueId}/activity`),
+};
+
+export const notificationsApi = {
+  list: (params?: { cursor?: string; limit?: number }) =>
+    apiClient.get<{ items: Notification[]; nextCursor: string | null }>('/notifications', { params }),
+  unreadCount: () => apiClient.get<{ count: number }>('/notifications/unread-count'),
+  markRead: (id: string) => apiClient.patch<Notification>(`/notifications/${id}/read`),
+  markAllRead: () => apiClient.patch('/notifications/read-all'),
 };

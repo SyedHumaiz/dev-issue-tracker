@@ -3,6 +3,7 @@ import { useAuthStore } from '@/src/store/useAuthStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { useRealtimeConnection } from '@/src/hooks/useRealtime';
+import { NotificationBell } from '@/src/components/NotificationBell';
 
 export default function AppLayout() {
   const { token, isLoading } = useAuthStore();
@@ -30,6 +31,7 @@ export default function AppLayout() {
           backgroundColor: dark ? '#1f2937' : '#ffffff',
         },
         headerTintColor: dark ? '#f8fafc' : '#0f172a',
+        headerRight: () => <NotificationBell />,
         headerTitleStyle: {
           fontWeight: '600',
         },
@@ -41,6 +43,7 @@ export default function AppLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="projects/[id]" options={{ title: 'Project Details' }} />
       <Stack.Screen name="issues/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
     </Stack>
   );
 }

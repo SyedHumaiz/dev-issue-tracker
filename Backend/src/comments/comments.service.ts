@@ -1,14 +1,16 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { ActivityType } from '@prisma/client';
+import { ActivityType, NotificationType } from '@prisma/client';
 import { RealtimeService } from '../realtime/realtime.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly realtimeService: RealtimeService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private async requireProjectMember(projectId: string, userId: string): Promise<void> {
@@ -83,6 +85,21 @@ export class CommentsService {
       authorId,
       comment,
       activity,
+    );
+
+    const recipients = [issue.reporterId, issue.assigneeId].filter(
+      (recipientId): recipientId is string => !!recipientId && recipientId !== authorId,
+    );
+    await Promise.all(
+      [...new Set(recipients)].map((recipientId) => this.notificationsService.create({
+        recipientId,
+        actorId: authorId,
+        type: NotificationType.COMMENT_ADDED,
+        title: 'New comment',
+        message: `${author.name} commented on ${issue.title}.`,
+        projectId: issue.projectId,
+        issueId,
+      })),
     );
 
     return comment;

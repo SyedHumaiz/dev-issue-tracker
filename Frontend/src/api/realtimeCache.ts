@@ -12,6 +12,7 @@ import {
   IssueListItem,
   ProjectDetail,
   ProjectIssue,
+  Notification,
 } from '@/src/types';
 
 function shouldSkip(actorId: string | undefined, currentUserId: string | null) {
@@ -218,6 +219,23 @@ function handleCommentAdded(
   });
 }
 
+function handleNotificationCreated(queryClient: QueryClient, payload: Notification) {
+  queryClient.setQueryData(queryKeys.notifications, (current: any) => {
+    if (!current) {
+      return { pages: [{ items: [payload], nextCursor: null }], pageParams: [undefined] };
+    }
+    const exists = current.pages.some((page: any) => page.items.some((item: Notification) => item.id === payload.id));
+    if (exists) return current;
+    return {
+      ...current,
+      pages: current.pages.map((page: any, index: number) => index === 0 ? { ...page, items: [payload, ...page.items] } : page),
+    };
+  });
+  queryClient.setQueryData<{ count: number }>(queryKeys.unreadNotifications, (current) => ({
+    count: (current?.count ?? 0) + 1,
+  }));
+}
+
 export function applyRealtimeEvent(
   queryClient: QueryClient,
   event: string,
@@ -235,6 +253,9 @@ export function applyRealtimeEvent(
       break;
     case 'comment.added':
       handleCommentAdded(queryClient, payload as RealtimeCommentAddedPayload, currentUserId);
+      break;
+    case 'notification.created':
+      handleNotificationCreated(queryClient, payload as Notification);
       break;
     default:
       break;

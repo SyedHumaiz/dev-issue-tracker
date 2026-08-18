@@ -6,14 +6,16 @@ import { FilterIssueDto } from './dto/filter-issue.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { UpdatePriorityDto } from './dto/update-priority.dto';
 import { UpdateAssigneeDto } from './dto/update-assignee.dto';
-import { ActivityType } from '@prisma/client';
+import { ActivityType, NotificationType } from '@prisma/client';
 import { RealtimeService } from '../realtime/realtime.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class IssuesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly realtimeService: RealtimeService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private async requireProjectMember(projectId: string, userId: string): Promise<void> {
@@ -23,6 +25,29 @@ export class IssuesService {
     if (!membership) {
       throw new ForbiddenException('You are not a member of this project');
     }
+  }
+
+  private async notifyIssueRecipients(
+    issue: { id: string; projectId: string; title: string; reporterId: string; assigneeId: string | null },
+    actorId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    recipients: string[],
+  ) {
+    await Promise.all(
+      [...new Set(recipients)]
+        .filter((recipientId) => recipientId !== actorId)
+        .map((recipientId) => this.notificationsService.create({
+          recipientId,
+          actorId,
+          type,
+          title,
+          message,
+          projectId: issue.projectId,
+          issueId: issue.id,
+        })),
+    );
   }
 
   async create(dto: CreateIssueDto, reporterId: string) {
@@ -197,6 +222,7 @@ export class IssuesService {
         updatedIssue,
         activity,
       );
+      await this.notifyIssueRecipients(updatedIssue, actorId, NotificationType.STATUS_CHANGED, 'Issue status changed', `${updatedIssue.title} is now ${updatedIssue.status.replace('_', ' ').toLowerCase()}.`, [updatedIssue.reporterId, updatedIssue.assigneeId].filter(Boolean) as string[]);
     }
 
     if (dto.priority !== undefined && dto.priority !== existing.priority) {
@@ -216,6 +242,7 @@ export class IssuesService {
         updatedIssue,
         activity,
       );
+      await this.notifyIssueRecipients(updatedIssue, actorId, NotificationType.PRIORITY_CHANGED, 'Issue priority changed', `${updatedIssue.title} is now ${updatedIssue.priority.toLowerCase()} priority.`, [updatedIssue.reporterId, updatedIssue.assigneeId].filter(Boolean) as string[]);
     }
 
     if (dto.assigneeId !== undefined && dto.assigneeId !== existing.assigneeId) {
@@ -235,6 +262,9 @@ export class IssuesService {
         updatedIssue,
         activity,
       );
+      if (updatedIssue.assigneeId) {
+        await this.notifyIssueRecipients(updatedIssue, actorId, NotificationType.ISSUE_ASSIGNED, 'Issue assigned to you', `${updatedIssue.title} was assigned to you.`, [updatedIssue.assigneeId]);
+      }
     }
 
     return updatedIssue;

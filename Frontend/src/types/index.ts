@@ -259,3 +259,25 @@ export interface IssueFilter {
   assigneeId?: string;
   reporterId?: string;
 }
+
+export type NotificationType =
+  | 'ISSUE_ASSIGNED'
+  | 'COMMENT_ADDED'
+  | 'MENTIONED'
+  | 'STATUS_CHANGED'
+  | 'PRIORITY_CHANGED'
+  | 'PROJECT_INVITED';
+
+export interface Notification {
+  id: string;
+  recipientId: string;
+  actorId: string | null;
+  actor: UserSummary | null;
+  type: NotificationType;
+  title: string;
+  message: string;
+  projectId: string | null;
+  issueId: string | null;
+  isRead: boolean;
+  createdAt: string;
+}

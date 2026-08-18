@@ -1,12 +1,13 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useColorScheme } from 'nativewind';
+import { NotificationBell } from '@/src/components/NotificationBell';
 
 export default function TabsLayout() {
   const { colorScheme } = useColorScheme();
   const dark = colorScheme === 'dark';
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#60a5fa', tabBarInactiveTintColor: dark ? '#94a3b8' : '#64748b', tabBarStyle: { backgroundColor: dark ? '#1f2937' : '#ffffff', borderTopColor: dark ? '#334155' : '#e2e8f0' }, headerStyle: { backgroundColor: dark ? '#1f2937' : '#ffffff' }, headerTintColor: dark ? '#f8fafc' : '#0f172a' }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#60a5fa', tabBarInactiveTintColor: dark ? '#94a3b8' : '#64748b', tabBarStyle: { backgroundColor: dark ? '#1f2937' : '#ffffff', borderTopColor: dark ? '#334155' : '#e2e8f0' }, headerStyle: { backgroundColor: dark ? '#1f2937' : '#ffffff' }, headerTintColor: dark ? '#f8fafc' : '#0f172a', headerRight: () => <NotificationBell /> }}>
       <Tabs.Screen
         name="projects"
         options={{

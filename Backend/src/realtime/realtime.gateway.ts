@@ -56,6 +56,7 @@ export class RealtimeGateway
       }
 
       client.data.userId = user.id;
+      await client.join(`user:${user.id}`);
       this.logger.debug(`Client connected: ${client.id} (user ${user.id})`);
     } catch (error) {
       this.logger.warn(`Rejected socket connection: ${client.id}`);

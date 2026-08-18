@@ -7,6 +7,7 @@ import { CommentsModule } from './comments/comments.module';
 import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     IssuesModule,
     CommentsModule,
     ActivityModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

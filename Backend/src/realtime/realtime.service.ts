@@ -13,6 +13,10 @@ export class RealtimeService {
     this.server?.to(`project:${projectId}`).emit(event, payload);
   }
 
+  emitNotification(recipientId: string, payload: unknown) {
+    this.server?.to(`user:${recipientId}`).emit('notification.created', payload);
+  }
+
   private emitToIssue(issueId: string, event: string, payload: unknown) {
     this.server?.to(`issue:${issueId}`).emit(event, payload);
   }
