@@ -3,6 +3,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 
@@ -22,9 +23,19 @@ export class ProjectsController {
     return this.projectsService.findAll(user.id);
   }
 
+  @Get(':id/stats')
+  stats(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.projectsService.getStats(id, user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.projectsService.findOne(id, user.id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateProjectDto, @CurrentUser() user: any) {
+    return this.projectsService.update(id, dto, user.id);
   }
 
   @Post(':id/members')

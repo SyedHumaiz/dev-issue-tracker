@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { JwtAuthGuard } from '../auth/auth.guard';
@@ -20,7 +20,7 @@ export class CommentsController {
   }
 
   @Get()
-  findByIssue(@Param('issueId') issueId: string, @CurrentUser() user: any) {
-    return this.commentsService.findByIssue(issueId, user.id);
+  findByIssue(@Param('issueId') issueId: string, @Query('cursor') cursor: string | undefined, @Query('limit') limit: string | undefined, @CurrentUser() user: any) {
+    return this.commentsService.findByIssue(issueId, user.id, cursor, limit);
   }
 }

@@ -11,6 +11,7 @@ import {
   CreateCommentRequest,
   IssueFilter,
   UpdateProfileRequest,
+  UpdateProjectRequest,
 } from '@/src/types';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { queryKeys } from '@/src/api/queryKeys';
@@ -51,6 +52,14 @@ export function useProject(id: string) {
   return useQuery({
     queryKey: queryKeys.project(id),
     queryFn: async () => (await projectsApi.get(id)).data,
+    enabled: !!id,
+  });
+}
+
+export function useProjectStats(id: string) {
+  return useQuery({
+    queryKey: queryKeys.projectStats(id),
+    queryFn: async () => (await projectsApi.stats(id)).data,
     enabled: !!id,
   });
 }
@@ -96,6 +105,17 @@ export function useRemoveMember(projectId: string) {
   });
 }
 
+export function useUpdateProject(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateProjectRequest) => projectsApi.update(projectId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.projects });
+      qc.invalidateQueries({ queryKey: queryKeys.project(projectId) });
+    },
+  });
+}
+
 // ── Issues ──
 export function useIssues(filter?: IssueFilter) {
   return useQuery({
@@ -132,6 +152,7 @@ export function useUpdateStatus(issueId: string) {
       patchIssueCollections(qc, updatedIssue.projectId, issueId, updatedIssue);
       qc.invalidateQueries({ queryKey: queryKeys.issue(issueId) });
       qc.invalidateQueries({ queryKey: queryKeys.activity(issueId) });
+      qc.invalidateQueries({ queryKey: queryKeys.projectStats(updatedIssue.projectId) });
     },
   });
 }
@@ -164,9 +185,11 @@ export function useUpdateAssignee(issueId: string) {
 
 // ── Comments ──
 export function useComments(issueId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.comments(issueId),
-    queryFn: async () => (await commentsApi.list(issueId)).data,
+    queryFn: ({ pageParam }) => commentsApi.list(issueId, pageParam).then((res) => res.data),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: !!issueId,
   });
 }
@@ -185,9 +208,11 @@ export function useCreateComment(issueId: string) {
 
 // ── Activity ──
 export function useActivity(issueId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.activity(issueId),
-    queryFn: async () => (await activityApi.list(issueId)).data,
+    queryFn: ({ pageParam }) => activityApi.list(issueId, pageParam).then((res) => res.data),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: !!issueId,
   });
 }

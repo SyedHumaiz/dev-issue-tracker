@@ -12,6 +12,8 @@ import {
   AddMemberRequest,
   UpdateMemberRoleRequest,
   ProjectMember,
+  ProjectStats,
+  UpdateProjectRequest,
   IssueListItem,
   IssueDetail,
   CreateIssueRequest,
@@ -22,6 +24,7 @@ import {
   Comment,
   CreateCommentRequest,
   Activity,
+  CursorPage,
   Notification,
 } from '@/src/types';
 
@@ -54,8 +57,14 @@ export const projectsApi = {
   get: (id: string) =>
     apiClient.get<ProjectDetail>(`/projects/${id}`),
 
+  stats: (id: string) =>
+    apiClient.get<ProjectStats>(`/projects/${id}/stats`),
+
   create: (data: CreateProjectRequest) =>
     apiClient.post<ProjectDetail>('/projects', data),
+
+  update: (id: string, data: UpdateProjectRequest) =>
+    apiClient.patch(`/projects/${id}`, data),
 
   addMember: (projectId: string, data: AddMemberRequest) =>
     apiClient.post<ProjectMember>(`/projects/${projectId}/members`, data),
@@ -75,6 +84,7 @@ export const issuesApi = {
   get: (id: string) =>
     apiClient.get<IssueDetail>(`/issues/${id}`),
 
+
   create: (data: CreateIssueRequest) =>
     apiClient.post<IssueListItem>('/issues', data),
 
@@ -90,8 +100,8 @@ export const issuesApi = {
 
 // ── Comments ──
 export const commentsApi = {
-  list: (issueId: string) =>
-    apiClient.get<Comment[]>(`/issues/${issueId}/comments`),
+  list: (issueId: string, cursor?: string) =>
+    apiClient.get<CursorPage<Comment>>(`/issues/${issueId}/comments`, { params: { limit: 20, ...(cursor ? { cursor } : {}) } }),
 
   create: (issueId: string, data: CreateCommentRequest) =>
     apiClient.post<Comment>(`/issues/${issueId}/comments`, data),
@@ -99,8 +109,8 @@ export const commentsApi = {
 
 // ── Activity ──
 export const activityApi = {
-  list: (issueId: string) =>
-    apiClient.get<Activity[]>(`/issues/${issueId}/activity`),
+  list: (issueId: string, cursor?: string) =>
+    apiClient.get<CursorPage<Activity>>(`/issues/${issueId}/activity`, { params: { limit: 20, ...(cursor ? { cursor } : {}) } }),
 };
 
 export const notificationsApi = {

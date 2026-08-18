@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView, Pressable, KeyboardAvoidingView, Modal, Platform } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView, Pressable, KeyboardAvoidingView, Keyboard, Modal, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useIssue, useProject, useUpdateStatus, useUpdatePriority, useUpdateAssignee, useCreateComment } from '@/src/api/hooks';
-import { Comment, IssueStatus, Priority } from '@/src/types';
+import { useIssue, useComments, useActivity, useProject, useUpdateStatus, useUpdatePriority, useUpdateAssignee, useCreateComment } from '@/src/api/hooks';
+import { Activity, Comment, IssueStatus, Priority } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
 import { Avatar, PriorityBadge, StatusBadge } from '@/src/components/IssueCard';
-import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 import { useIssueRoom } from '@/src/hooks/useRealtime';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { EmptyState } from '@/src/components/EmptyState';
+import { formatActivity, formatRelativeTime } from '@/src/utils/activity';
+import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,6 +19,8 @@ export default function IssueDetailsScreen() {
   const insets = useSafeAreaInsets();
   useIssueRoom(id);
   const { data: issue, isLoading, error } = useIssue(id);
+  const comments = useComments(id);
+  const activity = useActivity(id);
   const { data: project } = useProject(issue?.projectId ?? '');
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   
@@ -29,6 +32,37 @@ export default function IssueDetailsScreen() {
   const [activeTab, setActiveTab] = useState<'comments' | 'activity'>('comments');
   const [commentBody, setCommentBody] = useState('');
   const [isPropertiesModalVisible, setPropertiesModalVisible] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(Keyboard.isVisible());
+  const commentsListRef = useRef<FlatList<Comment>>(null);
+  const isNearCommentsBottom = useRef(true);
+  const hasPositionedCommentsAtLatest = useRef(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSubscription = Keyboard.addListener(showEvent, () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener(hideEvent, () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  const commentItems = useMemo(
+    () => comments.data?.pages.slice().reverse().flatMap((page) => page.items.slice().reverse()) ?? [],
+    [comments.data],
+  );
+  const activityItems = useMemo(() => activity.data?.pages.flatMap((page) => page.items) ?? [], [activity.data]);
+
+  useEffect(() => {
+    if (activeTab === 'comments' && isNearCommentsBottom.current && commentItems.length) {
+      requestAnimationFrame(() => {
+        commentsListRef.current?.scrollToEnd({ animated: false });
+        hasPositionedCommentsAtLatest.current = true;
+      });
+    }
+  }, [activeTab, commentItems.length]);
 
   if (isLoading) {
     return (
@@ -93,29 +127,35 @@ export default function IssueDetailsScreen() {
             isMine ? 'text-right text-muted dark:text-muted-dark' : 'text-left text-muted dark:text-muted-dark'
           }`}
         >
-          {new Date(item.createdAt).toLocaleDateString()}
+          {formatRelativeTime(item.createdAt)}
         </Text>
       </View>
     );
   };
 
-  const renderActivity = ({ item }: { item: any }) => (
-    <View className="flex-row mb-4 items-start">
-      <View className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 justify-center items-center mr-3 mt-1">
-        <Text className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.actor.name.charAt(0)}</Text>
+  const renderActivity = ({ item }: { item: Activity }) => {
+    const description = formatActivity(item);
+
+    return (
+      <View className="mb-4 flex-row items-start">
+        <View className="mr-3 mt-1 h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
+          <Text className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.actor.name.charAt(0).toUpperCase()}</Text>
+        </View>
+        <View className="flex-1 rounded-lg border border-border bg-surface p-3 dark:border-border-dark dark:bg-surface-dark">
+          <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{description.title}</Text>
+          {description.detail && <Text className="mt-1 text-sm text-muted dark:text-muted-dark">{description.detail}</Text>}
+          <Text className="mt-1 text-xs text-muted dark:text-muted-dark">{formatRelativeTime(item.createdAt)}</Text>
+        </View>
       </View>
-      <View className="flex-1 bg-surface dark:bg-surface-dark p-3 rounded-lg border border-border dark:border-border-dark">
-        <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{item.actor.name} <Text className="font-normal text-muted dark:text-muted-dark">{item.type.replace('_', ' ').toLowerCase()}</Text></Text>
-        <Text className="text-xs text-muted dark:text-muted-dark mt-1">{new Date(item.createdAt).toLocaleString()}</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
+        enabled={isKeyboardVisible}
       >
         {/* Top Header Section with Top Safe Area Inset */}
         <View 
@@ -152,37 +192,45 @@ export default function IssueDetailsScreen() {
             <Avatar user={issue.assignee} size="small" />
             <MaterialIcons name="expand-more" size={20} color="#94a3b8" />
           </TouchableOpacity>
-          <Text className="text-muted dark:text-muted-dark text-sm mb-3">Project: {issue.project.name}</Text>
-          
-          <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'comments', label: `Comments (${issue.comments.length})` }, { value: 'activity', label: 'Activity' }]} />
+          <Text className="text-muted dark:text-muted-dark text-sm">Project: {issue.project.name}</Text>
+          <View className="mt-3"><SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'comments', label: 'Comments' }, { value: 'activity', label: 'Activity' }]} /></View>
         </View>
 
         {/* Scrollable Content Area */}
         <View className="flex-1 px-4 pt-3">
-          {activeTab === 'comments' ? (
-            <FlatList
-              data={issue.comments}
-              keyExtractor={(item) => item.id}
-              renderItem={renderComment}
-              ListEmptyComponent={<EmptyState compact icon="chat-bubble-outline" title="No comments yet" subtitle="Be the first to comment" iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
-              contentContainerStyle={{ paddingBottom: 16 }}
-              keyboardShouldPersistTaps="handled"
-            />
-          ) : (
-            <FlatList
-              data={issue.activities}
-              keyExtractor={(item) => item.id}
-              renderItem={renderActivity}
-              ListEmptyComponent={<EmptyState compact icon="history" title="No activity yet" subtitle="Updates to this issue will appear here" iconColor="#64748b" iconContainerClassName="bg-slate-100 dark:bg-slate-800" />}
-              contentContainerStyle={{ paddingBottom: 16 }}
-              keyboardShouldPersistTaps="handled"
-            />
-          )}
+          {activeTab === 'comments' ? <FlatList
+            ref={commentsListRef}
+            data={commentItems}
+            keyExtractor={(item) => item.id}
+            renderItem={renderComment}
+            contentContainerStyle={{ paddingBottom: 16, flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+            onScroll={(event) => { isNearCommentsBottom.current = event.nativeEvent.contentOffset.y + event.nativeEvent.layoutMeasurement.height >= event.nativeEvent.contentSize.height - 80; if (hasPositionedCommentsAtLatest.current && event.nativeEvent.contentOffset.y < 120 && comments.hasNextPage && !comments.isFetchingNextPage) comments.fetchNextPage(); }}
+            scrollEventThrottle={100}
+            initialNumToRender={12}
+            maxToRenderPerBatch={12}
+            windowSize={7}
+            ListHeaderComponent={comments.isFetchingNextPage ? <View className="py-3"><ActivityIndicator color="#2563eb" size="small" /></View> : comments.isFetchNextPageError ? <TouchableOpacity className="items-center py-3" onPress={() => comments.fetchNextPage()}><Text className="text-sm font-semibold text-blue-600">Retry loading older comments</Text></TouchableOpacity> : null}
+            ListEmptyComponent={comments.isLoading ? <View className="items-center py-10"><ActivityIndicator color="#2563eb" /></View> : comments.isError ? <TouchableOpacity className="items-center py-10" onPress={() => comments.refetch()}><Text className="text-sm font-semibold text-blue-600">Could not load comments. Tap to retry.</Text></TouchableOpacity> : <EmptyState compact icon="chat-bubble-outline" title="No comments yet" subtitle="Be the first to comment" iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
+          /> : <FlatList
+            data={activityItems}
+            keyExtractor={(item) => item.id}
+            renderItem={renderActivity}
+            contentContainerStyle={{ paddingBottom: 16, flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            onEndReached={() => { if (activity.hasNextPage && !activity.isFetchingNextPage) activity.fetchNextPage(); }}
+            onEndReachedThreshold={0.6}
+            initialNumToRender={12}
+            maxToRenderPerBatch={12}
+            windowSize={7}
+            ListEmptyComponent={activity.isLoading ? <View className="items-center py-10"><ActivityIndicator color="#2563eb" /></View> : activity.isError ? <TouchableOpacity className="items-center py-10" onPress={() => activity.refetch()}><Text className="text-sm font-semibold text-blue-600">Could not load activity. Tap to retry.</Text></TouchableOpacity> : <EmptyState compact icon="history" title="No activity yet" subtitle="Updates to this issue will appear here" iconColor="#64748b" iconContainerClassName="bg-slate-100 dark:bg-slate-800" />}
+            ListFooterComponent={activity.isFetchingNextPage ? <View className="py-4"><ActivityIndicator color="#2563eb" size="small" /></View> : activity.isFetchNextPageError ? <TouchableOpacity className="items-center py-4" onPress={() => activity.fetchNextPage()}><Text className="text-sm font-semibold text-blue-600">Retry loading activity</Text></TouchableOpacity> : null}
+          />}
         </View>
 
         {/* Bottom Comment Bar with Bottom Safe Area Inset & In-Flow Flex Layout */}
-        {activeTab === 'comments' && (
-          <View 
+        {activeTab === 'comments' && <View 
             style={{ 
               paddingBottom: Math.max(insets.bottom, 12),
               paddingTop: 10,
@@ -209,8 +257,7 @@ export default function IssueDetailsScreen() {
                 <Text className="text-white font-bold text-lg">↑</Text>
               )}
             </Pressable>
-          </View>
-        )}
+        </View>}
       </KeyboardAvoidingView>
       <Modal
         visible={isPropertiesModalVisible}

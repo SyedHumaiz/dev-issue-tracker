@@ -88,6 +88,7 @@ export interface ProjectMember {
 export interface ProjectListItem {
   id: string;
   name: string;
+  isArchived: boolean;
   createdAt: string;
   members: ProjectMember[];
   _count: {
@@ -116,9 +117,17 @@ export interface ProjectIssue {
 export interface ProjectDetail {
   id: string;
   name: string;
+  isArchived: boolean;
   createdAt: string;
   members: ProjectMember[];
   issues: ProjectIssue[];
+}
+
+export interface ProjectStats {
+  total: number;
+  open: number;
+  inReview: number;
+  closed: number;
 }
 
 // ── Issue ──
@@ -180,6 +189,12 @@ export interface Activity {
   actor: UserSummary;
 }
 
+export interface CursorPage<T> {
+  items: T[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
 // ── Request DTOs (what the frontend sends to the backend) ──
 export interface SignupRequest {
   email: string;
@@ -217,6 +232,11 @@ export interface AddMemberRequest {
 
 export interface UpdateMemberRoleRequest {
   role: Role;
+}
+
+export interface UpdateProjectRequest {
+  name?: string;
+  isArchived?: boolean;
 }
 
 export interface CreateIssueRequest {

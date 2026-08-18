@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useProject, useCreateIssue, useAddMember, useSearchUsers, useIssues, useUpdateStatus } from '@/src/api/hooks';
+import { useProject, useProjectStats, useCreateIssue, useAddMember, useSearchUsers, useIssues, useUpdateStatus, useUpdateMemberRole, useRemoveMember, useUpdateProject } from '@/src/api/hooks';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { IssueListItem, IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -62,7 +62,13 @@ export default function ProjectDetailsScreen() {
   const addMember = useAddMember(id);
   const currentUser = useAuthStore((state) => state.user);
 
-  const [activeTab, setActiveTab] = useState<'issues' | 'members'>('issues');
+  const [activeTab, setActiveTab] = useState<'overview' | 'issues' | 'members'>('overview');
+  const { data: stats, isLoading: isStatsLoading } = useProjectStats(id);
+  const updateMemberRole = useUpdateMemberRole(id);
+  const removeMember = useRemoveMember(id);
+  const updateProject = useUpdateProject(id);
+  const [projectName, setProjectName] = useState('');
+  const [isEditingSettings, setIsEditingSettings] = useState(false);
   
   // Issue Creation State
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
@@ -142,6 +148,44 @@ export default function ProjectDetailsScreen() {
     setSelectedUser(null);
   };
 
+  const handleRoleToggle = (member: any) => {
+    Alert.alert('Change member role', `Make ${member.user.name} a ${member.role === Role.OWNER ? 'Member' : 'Owner'}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Confirm', onPress: () => updateMemberRole.mutate({ userId: member.userId, data: { role: member.role === Role.OWNER ? Role.MEMBER : Role.OWNER } }) },
+    ]);
+  };
+
+  const handleRemoveMember = (member: any) => {
+    Alert.alert('Remove member', `Remove ${member.user.name} from this project?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => removeMember.mutate(member.userId) },
+    ]);
+  };
+
+  const handleSaveSettings = async () => {
+    if (!projectName.trim()) return;
+    try {
+      await updateProject.mutateAsync({ name: projectName.trim() });
+      setIsEditingSettings(false);
+    } catch (err) {
+      Alert.alert('Error', getErrorMessage(err));
+    }
+  };
+
+  const handleArchive = () => {
+    Alert.alert('Archive project', 'This project will be hidden from the default Projects list.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Archive', style: 'destructive', onPress: async () => {
+        try {
+          await updateProject.mutateAsync({ isArchived: true });
+          router.back();
+        } catch (err) {
+          Alert.alert('Error', getErrorMessage(err));
+        }
+      } },
+    ]);
+  };
+
   const handleClearSelection = () => {
     setSelectedUser(null);
     setSearchQuery('');
@@ -170,8 +214,11 @@ export default function ProjectDetailsScreen() {
         <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">{item.user.name}</Text>
         <Text className="text-muted dark:text-muted-dark text-xs">{item.user.email}</Text>
       </View>
-      <View className={`px-3 py-1 rounded-full ${item.role === 'OWNER' ? 'bg-purple-100 dark:bg-purple-950' : 'bg-blue-100 dark:bg-blue-950'}`}>
+      <View className="flex-row items-center gap-2">
+      {isOwner && item.userId !== currentUser?.id && <TouchableOpacity onPress={() => handleRemoveMember(item)}><MaterialIcons name="person-remove" size={20} color="#dc2626" /></TouchableOpacity>}
+      <TouchableOpacity disabled={!isOwner || item.userId === currentUser?.id} onPress={() => handleRoleToggle(item)} className={`px-3 py-1 rounded-full ${item.role === 'OWNER' ? 'bg-purple-100 dark:bg-purple-950' : 'bg-blue-100 dark:bg-blue-950'}`}>
         <Text className={`text-xs font-semibold ${item.role === 'OWNER' ? 'text-purple-700 dark:text-purple-300' : 'text-blue-700 dark:text-blue-300'}`}>{item.role}</Text>
+      </TouchableOpacity>
       </View>
     </View>
   );
@@ -186,8 +233,29 @@ export default function ProjectDetailsScreen() {
           <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{project.name}</Text>
           <Text className="mt-1 text-sm text-muted dark:text-muted-dark">{project.issues.length} issues · {project.members.length} members</Text>
         </View>
-        <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'issues', label: 'Issues' }, { value: 'members', label: 'Members' }]} />
+        <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'issues', label: 'Issues' }, { value: 'members', label: 'Members' }]} />
       </View>
+
+      {activeTab === 'overview' && (
+        <ScrollView className="flex-1 p-4">
+          <View className="rounded-xl border border-border bg-surface p-5 dark:border-border-dark dark:bg-surface-dark">
+            <Text className="text-sm font-semibold text-muted dark:text-muted-dark">TOTAL ISSUES</Text>
+            {isStatsLoading ? <ActivityIndicator className="mt-3" color="#2563eb" /> : <Text className="mt-1 text-4xl font-bold text-foreground dark:text-foreground-dark">{stats?.total ?? 0}</Text>}
+          </View>
+          <View className="mt-4 flex-row gap-3">
+            {[['Open', stats?.open ?? 0, 'bg-emerald-100', 'text-emerald-700'], ['In Review', stats?.inReview ?? 0, 'bg-blue-100', 'text-blue-700'], ['Closed', stats?.closed ?? 0, 'bg-slate-200', 'text-slate-700']].map(([label, value, bg, text]) => (
+              <View key={label as string} className={`flex-1 rounded-xl p-3 ${bg}`}><Text className={`text-xs font-semibold ${text}`}>{label}</Text><Text className={`mt-1 text-2xl font-bold ${text}`}>{value}</Text></View>
+            ))}
+          </View>
+          {isOwner && (
+            <View className="mt-5 rounded-xl border border-border bg-surface p-4 dark:border-border-dark dark:bg-surface-dark">
+              <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">Project settings</Text>
+              {isEditingSettings ? <><TextInput className="mt-3 rounded-lg border border-border bg-slate-50 px-3 py-2 text-foreground dark:border-border-dark dark:bg-slate-800 dark:text-foreground-dark" value={projectName} onChangeText={setProjectName} /><View className="mt-3 flex-row justify-end gap-3"><TouchableOpacity onPress={() => setIsEditingSettings(false)}><Text className="text-muted">Cancel</Text></TouchableOpacity><TouchableOpacity onPress={handleSaveSettings}><Text className="font-semibold text-blue-600">Save</Text></TouchableOpacity></View></> : <TouchableOpacity className="mt-3" onPress={() => { setProjectName(project.name); setIsEditingSettings(true); }}><Text className="font-semibold text-blue-600">Edit project name</Text></TouchableOpacity>}
+              <TouchableOpacity className="mt-4 border-t border-border pt-4 dark:border-border-dark" onPress={handleArchive}><Text className="font-semibold text-red-600">Archive project</Text></TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      )}
 
       {activeTab === 'issues' && (
         <View className="flex-1 p-4">

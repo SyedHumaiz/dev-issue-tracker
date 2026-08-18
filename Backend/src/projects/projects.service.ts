@@ -8,7 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member.dto';
-import { NotificationType, Role } from '@prisma/client';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { IssueStatus, NotificationType, Role } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
@@ -61,7 +62,7 @@ export class ProjectsService {
 
   async findAll(userId: string) {
     return this.prisma.project.findMany({
-      where: { members: { some: { userId } } },
+      where: { isArchived: false, members: { some: { userId } } },
       include: {
         members: {
           include: {
@@ -123,6 +124,33 @@ export class ProjectsService {
     await this.requireProjectMember(id, userId);
 
     return project;
+  }
+
+  async getStats(projectId: string, userId: string) {
+    await this.requireProjectMember(projectId, userId);
+    const counts = await this.prisma.issue.groupBy({
+      by: ['status'],
+      where: { projectId },
+      _count: { _all: true },
+    });
+    const byStatus = new Map(counts.map((count) => [count.status, count._count._all]));
+    const open = byStatus.get(IssueStatus.OPEN) ?? 0;
+    const inReview = byStatus.get(IssueStatus.IN_REVIEW) ?? 0;
+    const closed = byStatus.get(IssueStatus.CLOSED) ?? 0;
+    return { total: open + inReview + closed, open, inReview, closed };
+  }
+
+  async update(id: string, dto: UpdateProjectDto, actorId: string) {
+    await this.requireOwner(id, actorId);
+    const project = await this.prisma.project.findUnique({ where: { id } });
+    if (!project) throw new NotFoundException(`Project with ID ${id} not found`);
+    return this.prisma.project.update({
+      where: { id },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+        ...(dto.isArchived !== undefined ? { isArchived: dto.isArchived } : {}),
+      },
+    });
   }
 
   async addMember(projectId: string, dto: AddMemberDto, actorId: string) {
@@ -196,6 +224,11 @@ export class ProjectsService {
       throw new NotFoundException('Member not found in project');
     }
 
+    if (member.role === Role.OWNER && dto.role === Role.MEMBER) {
+      const ownerCount = await this.prisma.projectMember.count({ where: { projectId, role: Role.OWNER } });
+      if (ownerCount === 1) throw new ForbiddenException('A project must have at least one owner');
+    }
+
     return this.prisma.projectMember.update({
       where: {
         userId_projectId: {
@@ -229,6 +262,11 @@ export class ProjectsService {
 
     if (!member) {
       throw new NotFoundException('Member not found in project');
+    }
+
+    if (member.role === Role.OWNER) {
+      const ownerCount = await this.prisma.projectMember.count({ where: { projectId, role: Role.OWNER } });
+      if (ownerCount === 1) throw new ForbiddenException('A project must have at least one owner');
     }
 
     return this.prisma.projectMember.delete({

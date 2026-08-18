@@ -13,6 +13,7 @@ import {
   ProjectDetail,
   ProjectIssue,
   Notification,
+  CursorPage,
 } from '@/src/types';
 
 function shouldSkip(actorId: string | undefined, currentUserId: string | null) {
@@ -51,6 +52,22 @@ function appendUniqueActivity(activities: Activity[], activity: Activity) {
 function appendUniqueComment(comments: Comment[], comment: Comment) {
   if (comments.some((item) => item.id === comment.id)) return comments;
   return [...comments, comment];
+}
+
+function prependPaginatedItem<T extends { id: string; createdAt: string }>(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[],
+  item: T,
+) {
+  queryClient.setQueryData<{ pages: CursorPage<T>[]; pageParams: unknown[] }>(queryKey, (current) => {
+    if (!current?.pages.length) return current;
+    if (current.pages.some((page) => page.items.some((existing) => existing.id === item.id))) return current;
+    const [firstPage, ...remainingPages] = current.pages;
+    const items = [item, ...firstPage.items].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() || b.id.localeCompare(a.id),
+    );
+    return { ...current, pages: [{ ...firstPage, items }, ...remainingPages] };
+  });
 }
 
 export function patchIssueCollections(
@@ -155,14 +172,8 @@ function handleIssueChanged(
 
   patchIssueCollections(queryClient, payload.projectId, payload.issueId, payload.issue);
 
-  queryClient.setQueryData<IssueDetail>(queryKeys.issue(payload.issueId), (current) => {
-    if (!current || !Array.isArray(current.activities)) return current;
-    return {
-      ...current,
-      ...payload.issue,
-      activities: appendUniqueActivity(current.activities, payload.activity),
-    };
-  });
+  queryClient.setQueryData<IssueDetail>(queryKeys.issue(payload.issueId), (current) => current ? { ...current, ...payload.issue } : current);
+  prependPaginatedItem(queryClient, queryKeys.activity(payload.issueId), payload.activity);
 
   queryClient.setQueryData<Activity[]>(queryKeys.activity(payload.issueId), (current) => {
     if (!Array.isArray(current)) return current;
@@ -182,14 +193,8 @@ function handleCommentAdded(
     return appendUniqueComment(current, payload.comment);
   });
 
-  queryClient.setQueryData<IssueDetail>(queryKeys.issue(payload.issueId), (current) => {
-    if (!current || !Array.isArray(current.comments) || !Array.isArray(current.activities)) return current;
-    return {
-      ...current,
-      comments: appendUniqueComment(current.comments, payload.comment),
-      activities: appendUniqueActivity(current.activities, payload.activity),
-    };
-  });
+  prependPaginatedItem(queryClient, queryKeys.comments(payload.issueId), payload.comment);
+  prependPaginatedItem(queryClient, queryKeys.activity(payload.issueId), payload.activity);
 
   queryClient.setQueryData<Activity[]>(queryKeys.activity(payload.issueId), (current) => {
     if (!Array.isArray(current)) return current;

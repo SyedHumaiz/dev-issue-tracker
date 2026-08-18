@@ -142,18 +142,6 @@ export class IssuesService {
         project: { select: { id: true, name: true } },
         reporter: { select: { id: true, name: true, avatarUrl: true } },
         assignee: { select: { id: true, name: true, avatarUrl: true } },
-        comments: {
-          include: {
-            author: { select: { id: true, name: true, avatarUrl: true } },
-          },
-          orderBy: { createdAt: 'asc' },
-        },
-        activities: {
-          include: {
-            actor: { select: { id: true, name: true, avatarUrl: true } },
-          },
-          orderBy: { createdAt: 'asc' },
-        },
       },
     });
 
@@ -251,7 +239,12 @@ export class IssuesService {
           type: ActivityType.ASSIGNEE_CHANGED,
           issueId: id,
           actorId,
-          meta: { before: existing.assigneeId, after: dto.assigneeId },
+          meta: {
+            before: existing.assigneeId,
+            after: dto.assigneeId,
+            beforeName: existing.assignee?.name ?? null,
+            afterName: updatedIssue.assignee?.name ?? null,
+          },
         },
         include: { actor: actorSelect },
       });
