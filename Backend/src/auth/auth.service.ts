@@ -80,9 +80,17 @@ export class AuthService {
     const accessToken = this.signToken(user.id, user.email);
 
     // Return user without password
-    const { password: _omit, ...safeUser } = user;
+    const { password: _omit, githubAccessToken: _githubAccessToken, ...safeUser } = user;
 
     return { accessToken, user: safeUser };
+  }
+
+  async connectGithub(userId: string, github: { githubId: string; githubUsername: string; accessToken: string }) {
+    return this.usersService.connectGithub(userId, { id: github.githubId, username: github.githubUsername, accessToken: github.accessToken });
+  }
+
+  async disconnectGithub(userId: string) {
+    return this.usersService.disconnectGithub(userId);
   }
 
   private signToken(userId: string, email: string): string {

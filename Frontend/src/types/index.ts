@@ -36,6 +36,7 @@ export interface User {
   bio: string | null;
   skills: string[];
   githubUrl: string | null;
+  githubUsername: string | null;
   linkedinUrl: string | null;
   yearsExperience: number | null;
   location: string | null;
@@ -270,6 +271,11 @@ export interface UpdateAssigneeRequest {
 
 export interface CreateCommentRequest {
   body: string;
+}
+
+export interface GithubStatus {
+  connected: boolean;
+  username: string | null;
 }
 
 export interface IssueFilter {

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { projectsApi, issuesApi, commentsApi, activityApi, usersApi, notificationsApi } from '@/src/api/endpoints';
+import { projectsApi, issuesApi, commentsApi, activityApi, usersApi, notificationsApi, authApi } from '@/src/api/endpoints';
 import {
   CreateProjectRequest,
   AddMemberRequest,
@@ -37,6 +37,23 @@ export function useSearchUsers(query: string) {
     queryFn: async () => (await usersApi.search(query)).data,
     enabled: query.trim().length >= 2,
     staleTime: 30_000,
+  });
+}
+
+export function useGithubStatus() {
+  return useQuery({
+    queryKey: queryKeys.githubStatus,
+    queryFn: () => usersApi.githubStatus().then((res) => res.data),
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+}
+
+export function useDisconnectGithub() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => authApi.disconnectGithub(),
+    onSuccess: () => qc.setQueryData(queryKeys.githubStatus, { connected: false, username: null }),
   });
 }
 

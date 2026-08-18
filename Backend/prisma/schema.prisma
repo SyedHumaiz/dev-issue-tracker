@@ -52,6 +52,9 @@ model User {
   bio            String?
   skills         String[]        @default([])
   githubUrl      String?
+  githubId       String?         @unique
+  githubUsername String?
+  githubAccessToken String?
   linkedinUrl    String?
   yearsExperience Int?
   location       String?

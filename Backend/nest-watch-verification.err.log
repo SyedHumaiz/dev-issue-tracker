@@ -1,0 +1,190 @@
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module './github.strategy'
+Require stack:
+- D:\c\dev-issue-tracker\Backend\dist\auth\auth.module.js
+- D:\c\dev-issue-tracker\Backend\dist\projects\projects.module.js
+- D:\c\dev-issue-tracker\Backend\dist\app.module.js
+- D:\c\dev-issue-tracker\Backend\dist\main.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at Object.<anonymous> (D:\c\dev-issue-tracker\Backend\src\auth\auth.module.ts:8:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'D:\\c\\dev-issue-tracker\\Backend\\dist\\auth\\auth.module.js',
+    'D:\\c\\dev-issue-tracker\\Backend\\dist\\projects\\projects.module.js',
+    'D:\\c\\dev-issue-tracker\\Backend\\dist\\app.module.js',
+    'D:\\c\\dev-issue-tracker\\Backend\\dist\\main.js'
+  ]
+}
+
+Node.js v22.19.0
+[31m[Nest] 15120  - [39m08/19/2026, 1:37:34 AM [31m  ERROR[39m [38;5;3m[ExceptionHandler] [39m[31mOAuth2Strategy requires a clientID option[39m
+TypeError: OAuth2Strategy requires a clientID option
+    at GithubStrategy.OAuth2Strategy (D:\c\dev-issue-tracker\Backend\node_modules\passport-oauth2\lib\strategy.js:87:34)
+    at new Strategy (D:\c\dev-issue-tracker\Backend\node_modules\passport-github2\lib\strategy.js:62:18)
+    at new StrategyWithMixin (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\passport\dist\passport\passport.strategy.js:34:13)
+    at new GithubStrategy (D:\c\dev-issue-tracker\Backend\src\auth\github.strategy.ts:8:5)
+    at Injector.instantiateClass (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\injector\injector.js:373:19)
+    at callback (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\injector\injector.js:65:45)
+    at async Injector.resolveConstructorParams (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\injector\injector.js:145:24)
+    at async Injector.loadInstance (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\injector\injector.js:70:13)
+    at async Injector.loadProvider (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\injector\injector.js:98:9)
+    at async D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\injector\instance-loader.js:56:13
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\c\dev-issue-tracker\Backend\dist\main'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.19.0
+[31m[Nest] 12076  - [39m08/19/2026, 2:31:52 AM [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3000[39m[38;5;3m +3ms[39m
+node:net:1940
+    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
+               ^
+
+Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at ExpressAdapter.listen (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
+    at D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\nest-application.js:183:30
+    at new Promise (<anonymous>)
+    at NestApplication.listen (D:\c\dev-issue-tracker\Backend\node_modules\@nestjs\core\nest-application.js:173:16)
+    at async bootstrap (D:\c\dev-issue-tracker\Backend\src\main.ts:15:3) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+
+Node.js v22.19.0

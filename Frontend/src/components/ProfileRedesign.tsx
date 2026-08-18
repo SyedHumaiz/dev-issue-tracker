@@ -4,12 +4,12 @@ import { ActivityIndicator, Alert, Image, Linking, Modal, Pressable, ScrollView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUpdateProfile } from '@/src/api/hooks';
 import { ThemeMode, useThemeStore } from '@/src/store/useThemeStore';
-import { User } from '@/src/types';
+import { GithubStatus, User } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
 
 const fieldClass = 'rounded-xl border border-border bg-slate-50 px-4 py-3 text-foreground dark:border-border-dark dark:bg-slate-800 dark:text-foreground-dark';
 
-export function ProfileRedesign({ user, onLogout }: { user: User; onLogout: () => Promise<void> }) {
+export function ProfileRedesign({ user, onLogout, githubStatus, onConnectGithub, onDisconnectGithub, githubLoading }: { user: User; onLogout: () => Promise<void>; githubStatus?: GithubStatus; onConnectGithub: () => void; onDisconnectGithub: () => void; githubLoading: boolean }) {
   const updateProfile = useUpdateProfile(); const themeMode = useThemeStore((state) => state.themeMode); const setThemeMode = useThemeStore((state) => state.setThemeMode);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ jobTitle: user.jobTitle || '', bio: user.bio || '', skills: user.skills.join(', '), githubUrl: user.githubUrl || '', linkedinUrl: user.linkedinUrl || '', yearsExperience: user.yearsExperience?.toString() || '', location: user.location || '' });

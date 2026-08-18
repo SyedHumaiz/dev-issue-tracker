@@ -20,6 +20,12 @@ export class UsersController {
     return this.usersService.updateProfile(user.id, dto);
   }
 
+  @Get('me/github-status')
+  @UseGuards(JwtAuthGuard)
+  githubStatus(@CurrentUser() user: any) {
+    return this.usersService.githubStatus(user.id);
+  }
+
   // Must be declared BEFORE ':id' so NestJS doesn't interpret 'search' as an id param
   @Get('search')
   @UseGuards(JwtAuthGuard)
@@ -34,4 +40,3 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 }
-

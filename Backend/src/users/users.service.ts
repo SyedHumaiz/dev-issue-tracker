@@ -11,6 +11,7 @@ const userSelect = {
   bio: true,
   skills: true,
   githubUrl: true,
+  githubUsername: true,
   linkedinUrl: true,
   yearsExperience: true,
   location: true,
@@ -60,6 +61,30 @@ export class UsersService {
     });
   }
 
+  async githubStatus(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { githubId: true, githubUsername: true },
+    });
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    return { connected: Boolean(user.githubId && user.githubUsername), username: user.githubUsername };
+  }
+
+  async connectGithub(id: string, github: { id: string; username: string; accessToken: string }) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { githubId: github.id, githubUsername: github.username, githubAccessToken: github.accessToken },
+      select: { githubUsername: true },
+    });
+  }
+
+  async disconnectGithub(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: { githubId: null, githubUsername: null, githubAccessToken: null },
+    });
+  }
+
 
   async search(query: string, excludeUserId?: string) {
     const tokens = query.trim().split(/\s+/).filter(Boolean);
@@ -94,4 +119,3 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 }
-

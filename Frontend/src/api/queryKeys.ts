@@ -10,4 +10,5 @@ export const queryKeys = {
   activity: (issueId: string) => ['activity', issueId] as const,
   notifications: ['notifications'] as const,
   unreadNotifications: ['notifications', 'unread-count'] as const,
+  githubStatus: ['users', 'me', 'github-status'] as const,
 };

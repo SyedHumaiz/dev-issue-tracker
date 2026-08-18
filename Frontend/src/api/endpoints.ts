@@ -26,6 +26,7 @@ import {
   Activity,
   CursorPage,
   Notification,
+  GithubStatus,
 } from '@/src/types';
 
 // ── Auth ──
@@ -38,6 +39,8 @@ export const authApi = {
 
   me: () =>
     apiClient.get<User>('/auth/me'),
+
+  disconnectGithub: () => apiClient.delete('/auth/github'),
 };
 
 // ── Users ──
@@ -47,6 +50,8 @@ export const usersApi = {
 
   updateProfile: (data: UpdateProfileRequest) =>
     apiClient.patch<User>('/users/profile', data),
+
+  githubStatus: () => apiClient.get<GithubStatus>('/users/me/github-status'),
 };
 
 // ── Projects ──
