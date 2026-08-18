@@ -10,6 +10,7 @@ import { getErrorMessage } from '@/src/utils/error';
 import { IssueCard } from '@/src/components/IssueCard';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 import { useProjectRoom } from '@/src/hooks/useRealtime';
+import { EmptyState } from '@/src/components/EmptyState';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 function SwipeableIssueRow({ issue, onPress }: { issue: IssueListItem; onPress: () => void }) {
@@ -56,7 +57,7 @@ export default function ProjectDetailsScreen() {
   const router = useRouter();
   useProjectRoom(id);
   const { data: project, isLoading, error } = useProject(id);
-  const { data: issues } = useIssues({ projectId: id });
+  const { data: issues, isLoading: isIssuesLoading } = useIssues({ projectId: id });
   const createIssue = useCreateIssue();
   const addMember = useAddMember(id);
   const currentUser = useAuthStore((state) => state.user);
@@ -88,7 +89,7 @@ export default function ProjectDetailsScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
   }
@@ -253,15 +254,7 @@ export default function ProjectDetailsScreen() {
             data={issues}
             keyExtractor={(item) => item.id}
             renderItem={renderIssue}
-            ListEmptyComponent={
-              <View className="items-center mt-12 rounded-xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark p-6">
-                <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950">
-                  <MaterialIcons name="assignment" size={20} color="#2563eb" />
-                </View>
-                <Text className="mt-3 font-semibold text-foreground dark:text-foreground-dark">No issues yet</Text>
-                <Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Create your first issue to start tracking work.</Text>
-              </View>
-            }
+            ListEmptyComponent={isIssuesLoading ? <View className="items-center py-12"><ActivityIndicator size="large" color="#2563eb" /><Text className="mt-3 text-sm text-muted dark:text-muted-dark">Loading issues…</Text></View> : <EmptyState icon="assignment" title="No issues yet" subtitle="Create the first issue to get started" iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
           />
         </View>
       )}

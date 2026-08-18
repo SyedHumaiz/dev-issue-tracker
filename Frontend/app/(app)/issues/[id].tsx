@@ -10,6 +10,7 @@ import { Avatar, PriorityBadge, StatusBadge } from '@/src/components/IssueCard';
 import { SegmentedTabs } from '@/src/components/SegmentedTabs';
 import { useIssueRoom } from '@/src/hooks/useRealtime';
 import { useAuthStore } from '@/src/store/useAuthStore';
+import { EmptyState } from '@/src/components/EmptyState';
 
 export default function IssueDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -32,7 +33,7 @@ export default function IssueDetailsScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
   }
@@ -163,15 +164,7 @@ export default function IssueDetailsScreen() {
               data={issue.comments}
               keyExtractor={(item) => item.id}
               renderItem={renderComment}
-              ListEmptyComponent={
-                <View className="mt-12 items-center">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950">
-                    <MaterialIcons name="chat-bubble-outline" size={19} color="#2563eb" />
-                  </View>
-                  <Text className="mt-3 font-semibold text-foreground dark:text-foreground-dark">No comments yet</Text>
-                  <Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Start the conversation on this issue.</Text>
-                </View>
-              }
+              ListEmptyComponent={<EmptyState compact icon="chat-bubble-outline" title="No comments yet" subtitle="Be the first to comment" iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
               contentContainerStyle={{ paddingBottom: 16 }}
               keyboardShouldPersistTaps="handled"
             />
@@ -180,15 +173,7 @@ export default function IssueDetailsScreen() {
               data={issue.activities}
               keyExtractor={(item) => item.id}
               renderItem={renderActivity}
-              ListEmptyComponent={
-                <View className="mt-12 items-center">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                    <MaterialIcons name="history" size={20} color="#64748b" />
-                  </View>
-                  <Text className="mt-3 font-semibold text-foreground dark:text-foreground-dark">No activity yet</Text>
-                  <Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Updates to this issue will appear here.</Text>
-                </View>
-              }
+              ListEmptyComponent={<EmptyState compact icon="history" title="No activity yet" subtitle="Updates to this issue will appear here" iconColor="#64748b" iconContainerClassName="bg-slate-100 dark:bg-slate-800" />}
               contentContainerStyle={{ paddingBottom: 16 }}
               keyboardShouldPersistTaps="handled"
             />

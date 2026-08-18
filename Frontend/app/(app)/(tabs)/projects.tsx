@@ -5,6 +5,7 @@ import { useProjects, useCreateProject } from '@/src/api/hooks';
 import { ProjectListItem } from '@/src/types';
 import { getErrorMessage } from '@/src/utils/error';
 import { MaterialIcons } from '@expo/vector-icons';
+import { EmptyState } from '@/src/components/EmptyState';
 
 export default function ProjectsScreen() {
   const { data: projects, isLoading, error } = useProjects();
@@ -39,7 +40,7 @@ export default function ProjectsScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#2563eb" />
         <Text className="mt-3 text-sm text-muted dark:text-muted-dark">Loading projects…</Text>
       </View>
     );
@@ -96,13 +97,7 @@ export default function ProjectsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
-        ListEmptyComponent={
-          <View className="items-center mt-12 bg-surface dark:bg-surface-dark rounded-xl border border-border dark:border-border-dark p-6">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950"><MaterialIcons name="folder-open" size={21} color="#2563eb" /></View>
-            <Text className="mt-3 text-base font-semibold text-foreground dark:text-foreground-dark">No projects yet</Text>
-            <Text className="mt-1 text-center text-sm text-muted dark:text-muted-dark">Create a project to start tracking your work.</Text>
-          </View>
-        }
+        ListEmptyComponent={<EmptyState icon="folder-open" title="No projects yet" subtitle="Create your first project to start tracking issues." iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
       />
     </View>
   );
