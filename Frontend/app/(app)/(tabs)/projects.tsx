@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator, TextInput, Alert, RefreshControl } from 'react-native';
 import { Link } from 'expo-router';
 import { useProjects, useCreateProject } from '@/src/api/hooks';
 import { ProjectListItem } from '@/src/types';
@@ -8,7 +8,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { EmptyState } from '@/src/components/EmptyState';
 
 export default function ProjectsScreen() {
-  const { data: projects, isLoading, error } = useProjects();
+  const { data: projects, isLoading, error, refetch, isRefetching } = useProjects();
   const createProject = useCreateProject();
   
   const [isCreating, setIsCreating] = useState(false);
@@ -49,7 +49,8 @@ export default function ProjectsScreen() {
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
-        <Text className="text-red-500">Failed to load projects.</Text>
+        <Text className="text-red-500">Could not load projects.</Text>
+        <Pressable className="mt-4 rounded-lg bg-blue-600 px-4 py-2" onPress={() => refetch()}><Text className="font-semibold text-white">Retry</Text></Pressable>
       </View>
     );
   }
@@ -97,6 +98,7 @@ export default function ProjectsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
+        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#2563eb" />}
         ListEmptyComponent={<EmptyState icon="folder-open" title="No projects yet" subtitle="Create your first project to start tracking issues." iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
       />
     </View>

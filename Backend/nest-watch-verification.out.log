@@ -1,0 +1,63 @@
+
+> api@0.0.1 start:dev
+> nest start --watch
+
+[2J[3J[H[[90m1:10:38 AM[0m] Starting compilation in watch mode...
+
+[[90m1:10:43 AM[0m] Found 0 errors. Watching for file changes.
+
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPrismaModule dependencies initialized[39m[38;5;3m +7ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPassportModule dependencies initialized[39m[38;5;3m +7ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRealtimeModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mActivityModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUsersModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mProjectsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIssuesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:44 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mCommentsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[WebSocketsController] [39m[32mRealtimeGateway subscribed to the "join:project" message[39m[38;5;3m +78ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[WebSocketsController] [39m[32mRealtimeGateway subscribed to the "leave:project" message[39m[38;5;3m +8ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[WebSocketsController] [39m[32mRealtimeGateway subscribed to the "join:issue" message[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[WebSocketsController] [39m[32mRealtimeGateway subscribed to the "leave:issue" message[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mUsersController {/users}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/users, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/users/profile, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/users/search, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/users/:id, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/auth/login, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mProjectsController {/projects}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects/:id/stats, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects/:id, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects/:id, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects/:id/members, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects/:id/members/:userId, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/projects/:id/members/:userId, DELETE} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mNotificationsController {/notifications}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/notifications, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/notifications/unread-count, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/notifications/read-all, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/notifications/:id/read, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mIssuesController {/issues}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:id, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:id, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:id/status, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:id/priority, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:id/assignee, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mCommentsController {/issues/:issueId/comments}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:issueId/comments, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:issueId/comments, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mActivityController {/issues/:issueId/activity}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/issues/:issueId/activity, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 16480  - [39m08/19/2026, 1:10:45 AM [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +414ms[39m
+Backend API running on http://localhost:3000

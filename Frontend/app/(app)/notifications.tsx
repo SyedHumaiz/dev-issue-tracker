@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { EmptyState } from '@/src/components/EmptyState';
@@ -40,7 +40,7 @@ export default function NotificationsScreen() {
     return <View className="flex-1 items-center justify-center bg-background dark:bg-background-dark"><ActivityIndicator size="large" color="#2563eb" /><Text className="mt-3 text-sm text-muted dark:text-muted-dark">Loading notifications…</Text></View>;
   }
   if (notifications.isError) {
-    return <View className="flex-1 items-center justify-center bg-background px-6 dark:bg-background-dark"><Text className="text-center text-red-600">Failed to load notifications.</Text></View>;
+    return <View className="flex-1 items-center justify-center bg-background px-6 dark:bg-background-dark"><Text className="text-center text-red-600">Could not load notifications.</Text><Pressable className="mt-4 rounded-lg bg-blue-600 px-4 py-2" onPress={() => notifications.refetch()}><Text className="font-semibold text-white">Retry</Text></Pressable></View>;
   }
 
   return (
@@ -51,6 +51,7 @@ export default function NotificationsScreen() {
         keyExtractor={(item) => item.id}
         onEndReached={() => { if (notifications.hasNextPage && !notifications.isFetchingNextPage) notifications.fetchNextPage(); }}
         onEndReachedThreshold={0.4}
+        refreshControl={<RefreshControl refreshing={notifications.isRefetching} onRefresh={notifications.refetch} tintColor="#2563eb" />}
         ListEmptyComponent={<EmptyState compact icon="notifications-none" title="No notifications yet" subtitle="Updates about your projects and issues will appear here." iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
         ListFooterComponent={notifications.isFetchingNextPage ? <ActivityIndicator className="py-4" color="#2563eb" /> : null}
         renderItem={({ item }) => <Pressable onPress={() => openNotification(item)} className={`mb-3 flex-row rounded-xl border p-4 ${item.isRead ? 'border-border bg-surface dark:border-border-dark dark:bg-surface-dark' : 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'}`}>

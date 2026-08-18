@@ -104,6 +104,9 @@ model Issue {
   comments    Comment[]
   activities  Activity[]
   notifications Notification[]
+
+  @@index([projectId, createdAt])
+  @@index([assigneeId, createdAt])
 }
 
 model Comment {
@@ -114,6 +117,8 @@ model Comment {
   issue     Issue    @relation(fields: [issueId], references: [id])
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
+
+  @@index([issueId, createdAt, id])
 }
 
 model Activity {
@@ -125,6 +130,8 @@ model Activity {
   issue     Issue        @relation(fields: [issueId], references: [id])
   actorId   String
   actor     User         @relation(fields: [actorId], references: [id])
+
+  @@index([issueId, createdAt, id])
 }
 
 model Notification {

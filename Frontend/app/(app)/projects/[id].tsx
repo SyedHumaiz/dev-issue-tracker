@@ -57,7 +57,7 @@ export default function ProjectDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   useProjectRoom(id);
-  const { data: project, isLoading, error } = useProject(id);
+  const { data: project, isLoading, error, refetch: refetchProject } = useProject(id);
   const { data: issues, isLoading: isIssuesLoading } = useIssues({ projectId: id });
   const createIssue = useCreateIssue();
   const addMember = useAddMember(id);
@@ -105,7 +105,8 @@ export default function ProjectDetailsScreen() {
   if (error || !project) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
-        <Text className="text-red-500">Failed to load project details.</Text>
+        <Text className="text-red-500">Could not load project details.</Text>
+        <TouchableOpacity className="mt-4 rounded-lg bg-blue-600 px-4 py-2" onPress={() => refetchProject()}><Text className="font-semibold text-white">Retry</Text></TouchableOpacity>
       </View>
     );
   }

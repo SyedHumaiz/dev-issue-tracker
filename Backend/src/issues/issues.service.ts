@@ -74,6 +74,7 @@ export class IssuesService {
       if (!assignee) {
         throw new NotFoundException(`Assignee user with ID ${dto.assigneeId} not found`);
       }
+      await this.requireProjectMember(dto.projectId, dto.assigneeId);
     }
 
     const issue = await this.prisma.issue.create({
@@ -171,6 +172,7 @@ export class IssuesService {
       if (!assignee) {
         throw new NotFoundException(`Assignee user with ID ${dto.assigneeId} not found`);
       }
+      await this.requireProjectMember(existing.projectId, dto.assigneeId);
     }
 
     const updateData: any = {};

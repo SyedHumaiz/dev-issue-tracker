@@ -11,16 +11,21 @@ import { useAuthStore } from '@/src/store/useAuthStore';
 import { useThemeStore } from '@/src/store/useThemeStore';
 import '../global.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false },
+    mutations: { retry: false },
+  },
+});
 
 const CustomDarkTheme = {
   ...NavDarkTheme,
   colors: {
     ...NavDarkTheme.colors,
-    background: '#111827',
-    card: '#1f2937',
-    text: '#f8fafc',
-    border: '#334155',
+    background: '#0F0F10',
+    card: '#171718',
+    text: '#F5F5F5',
+    border: '#2A2A2C',
     primary: '#60a5fa',
   },
 };

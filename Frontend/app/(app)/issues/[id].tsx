@@ -19,7 +19,7 @@ export default function IssueDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   useIssueRoom(id);
-  const { data: issue, isLoading, error } = useIssue(id);
+  const { data: issue, isLoading, error, refetch: refetchIssue } = useIssue(id);
   const comments = useComments(id);
   const activity = useActivity(id);
   const { data: project } = useProject(issue?.projectId ?? '');
@@ -77,7 +77,8 @@ export default function IssueDetailsScreen() {
   if (error || !issue) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
-        <Text className="text-red-500">Failed to load issue details.</Text>
+        <Text className="text-red-500">Could not load issue details.</Text>
+        <TouchableOpacity className="mt-4 rounded-lg bg-blue-600 px-4 py-2" onPress={() => refetchIssue()}><Text className="font-semibold text-white">Retry</Text></TouchableOpacity>
       </View>
     );
   }
