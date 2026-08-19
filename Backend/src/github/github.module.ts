@@ -6,9 +6,10 @@ import { GithubApiService } from './github-api.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { ProjectsModule } from '../projects/projects.module';
+import { GithubWebhooksModule } from '../github-webhooks/github-webhooks.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, NotificationsModule, RealtimeModule, ProjectsModule],
+  imports: [AuthModule, PrismaModule, NotificationsModule, RealtimeModule, ProjectsModule, GithubWebhooksModule],
   controllers: [GithubController],
   providers: [GithubApiService],
   exports: [GithubApiService],

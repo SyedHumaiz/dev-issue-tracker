@@ -11,6 +11,7 @@ export interface GithubPullRequestWebhookPayload {
     number?: number;
     title?: string;
     html_url?: string;
+    merged?: boolean;
     user?: { login?: string };
   };
   requested_reviewer?: { login?: string };

@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { ProjectsService } from '../projects/projects.service';
 import { MergeMethod } from './dto/merge-pull-request.dto';
+import { GithubMergeEventMarkerService } from '../github-webhooks/github-merge-event-marker.service';
 
 interface GithubApiError {
   message?: string;
@@ -51,6 +52,7 @@ export class GithubApiService {
     private readonly notificationsService: NotificationsService,
     private readonly realtimeService: RealtimeService,
     private readonly projectsService: ProjectsService,
+    private readonly mergeEventMarker: GithubMergeEventMarkerService,
   ) {}
 
   async listRepos(userId: string) {
@@ -103,32 +105,42 @@ export class GithubApiService {
     await this.projectsService.requireOwner(project.id, userId, 'merge pull requests');
     const pull = await this.fetchPullRequest(owner, repo, number, token);
     this.ensureMergeable(pull);
+    const repoFullName = `${owner}/${repo}`;
+    await this.mergeEventMarker.beginInAppMerge(repoFullName, number);
 
-    const response = await this.githubFetch(
-      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls/${number}/merge`,
-      token,
-      {
-        method: 'PUT',
-        body: JSON.stringify({ merge_method: mergeMethod, sha: pull.head.sha }),
-      },
-    );
-    const result = await response.json().catch(() => ({})) as GithubMergeResult & GithubApiError;
-    if (!response.ok) this.throwMergeError(response.status, result.message);
-    if (!result.merged) {
-      throw new ConflictException(result.message || 'GitHub could not merge this pull request. Refresh it and try again.');
+    try {
+      const response = await this.githubFetch(
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls/${number}/merge`,
+        token,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ merge_method: mergeMethod, sha: pull.head.sha }),
+        },
+      );
+      const result = await response.json().catch(() => ({})) as GithubMergeResult & GithubApiError;
+      if (!response.ok) this.throwMergeError(response.status, result.message);
+      if (!result.merged) {
+        throw new ConflictException(result.message || 'GitHub could not merge this pull request. Refresh it and try again.');
+      }
+
+      await this.recordMergeActivity(project, {
+        userId,
+        repoFullName,
+        number,
+        title: pull.title,
+        author: pull.user.login,
+        url: pull.html_url,
+        mergeMethod,
+      });
+      await this.mergeEventMarker.markInAppMergeRecorded(repoFullName, number);
+
+      return { merged: true, sha: result.sha, message: result.message || 'Pull request merged successfully.' };
+    } catch (error) {
+      // If the in-app path did not record the merge, allow a later webhook to
+      // represent the event rather than suppressing it with a stale marker.
+      await this.mergeEventMarker.clearInAppMerge(repoFullName, number);
+      throw error;
     }
-
-    await this.recordMergeActivity(project, {
-      userId,
-      repoFullName: `${owner}/${repo}`,
-      number,
-      title: pull.title,
-      author: pull.user.login,
-      url: pull.html_url,
-      mergeMethod,
-    });
-
-    return { merged: true, sha: result.sha, message: result.message || 'Pull request merged successfully.' };
   }
 
   private async fetchPullRequest(owner: string, repo: string, number: number, token: string) {

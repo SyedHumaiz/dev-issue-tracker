@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { GITHUB_WEBHOOK_QUEUE } from './github-webhooks.queue';
 import { GithubPullRequestWebhookPayload, GithubWebhookJob } from './github-webhooks.types';
+import { GithubMergeEventMarkerService } from './github-merge-event-marker.service';
 
 const PROCESSED_TTL_SECONDS = 60 * 60 * 24 * 7;
 const LOCK_TTL_SECONDS = 60 * 10;
@@ -23,6 +24,7 @@ export class GithubWebhooksProcessor implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly realtimeService: RealtimeService,
+    private readonly mergeEventMarker: GithubMergeEventMarkerService,
   ) {}
 
   onModuleInit() {
@@ -78,9 +80,6 @@ export class GithubWebhooksProcessor implements OnModuleInit, OnModuleDestroy {
   }
 
   private async handlePullRequest(payload: GithubPullRequestWebhookPayload) {
-    const actionDetails = this.getActionDetails(payload.action);
-    if (!actionDetails) return;
-
     const repoFullName = payload.repository?.full_name?.trim();
     const pullRequest = payload.pull_request;
     const number = pullRequest?.number;
@@ -90,6 +89,23 @@ export class GithubWebhooksProcessor implements OnModuleInit, OnModuleDestroy {
     if (!repoFullName || !number || !title || !url || !author) {
       throw new Error('GitHub pull_request webhook is missing required data');
     }
+
+    const isMergedClosure = payload.action === 'closed' && pullRequest?.merged === true;
+    if (isMergedClosure) {
+      const markerState = await this.mergeEventMarker.consumeCompletedInAppMerge(repoFullName, number);
+      if (markerState === 'recorded') {
+        this.logger.debug(`Skipping in-app merge webhook for ${repoFullName} PR #${number}`);
+        return;
+      }
+      if (markerState === 'pending') {
+        // The endpoint has successfully reached GitHub but has not yet
+        // committed its local activity. Retrying avoids an ordering race.
+        throw new Error(`In-app merge activity is still being recorded for PR #${number}`);
+      }
+    }
+
+    const actionDetails = this.getActionDetails(isMergedClosure ? 'merged' : payload.action);
+    if (!actionDetails) return;
 
     const project = await this.prisma.project.findFirst({
       where: { githubRepoFullName: { equals: repoFullName, mode: 'insensitive' } },
@@ -187,6 +203,12 @@ export class GithubWebhooksProcessor implements OnModuleInit, OnModuleDestroy {
         notificationType: NotificationType.GITHUB_PR_REVIEW_REQUESTED,
         notificationTitle: 'Review requested',
         message: (number: number, title: string, author: string) => `Your review was requested for PR #${number} '${title}' by ${author}.`,
+      },
+      merged: {
+        activityType: ActivityType.GITHUB_PR_MERGED,
+        notificationType: NotificationType.GITHUB_PR_MERGED,
+        notificationTitle: 'Pull request merged',
+        message: (number: number, title: string) => `PR #${number} '${title}' was merged on GitHub.`,
       },
     } as const;
     return common[action as keyof typeof common];
