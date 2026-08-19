@@ -34,9 +34,15 @@ export interface RealtimeCommentAddedPayload {
   activity: Activity;
 }
 
+export interface RealtimeProjectActivityCreatedPayload {
+  projectId: string;
+  activity: Activity;
+}
+
 export type RealtimeEventPayload =
   | RealtimeIssueCreatedPayload
   | RealtimeIssueChangedPayload
-  | RealtimeCommentAddedPayload;
+  | RealtimeCommentAddedPayload
+  | RealtimeProjectActivityCreatedPayload;
 
 export type IssueSummary = IssueListItem | ProjectIssue | IssueDetail;

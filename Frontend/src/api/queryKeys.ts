@@ -8,9 +8,11 @@ export const queryKeys = {
   issue: (id: string) => ['issues', id] as const,
   comments: (issueId: string) => ['comments', issueId] as const,
   activity: (issueId: string) => ['activity', issueId] as const,
+  projectActivity: (projectId: string) => ['projects', projectId, 'activity'] as const,
   notifications: ['notifications'] as const,
   unreadNotifications: ['notifications', 'unread-count'] as const,
   githubStatus: ['users', 'me', 'github-status'] as const,
   githubRepos: ['github', 'repos'] as const,
   githubPulls: (owner: string, repo: string) => ['github', 'repos', owner, repo, 'pulls'] as const,
+  githubPullDetail: (owner: string, repo: string, number: number) => ['github', 'repos', owner, repo, 'pulls', number] as const,
 };

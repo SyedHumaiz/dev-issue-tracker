@@ -11,7 +11,7 @@ function label(value: unknown) {
 
 export function formatActivity(activity: Activity): ActivityDescription {
   const { actor, meta, type } = activity;
-  const actorName = actor.name;
+  const actorName = actor?.name ?? (typeof meta.author === 'string' ? meta.author : 'GitHub');
 
   switch (type) {
     case ActivityType.STATUS_CHANGED:
@@ -31,6 +31,16 @@ export function formatActivity(activity: Activity): ActivityDescription {
     }
     case ActivityType.ISSUE_CREATED:
       return { title: `${actorName} created this issue` };
+    case ActivityType.GITHUB_PR_OPENED:
+      return { title: `PR #${meta.prNumber} '${meta.prTitle}' opened on GitHub by ${meta.author}` };
+    case ActivityType.GITHUB_PR_CLOSED:
+      return { title: `PR #${meta.prNumber} '${meta.prTitle}' closed on GitHub by ${meta.author}` };
+    case ActivityType.GITHUB_PR_REOPENED:
+      return { title: `PR #${meta.prNumber} '${meta.prTitle}' reopened on GitHub by ${meta.author}` };
+    case ActivityType.GITHUB_PR_REVIEW_REQUESTED:
+      return { title: `Review requested for PR #${meta.prNumber} '${meta.prTitle}' by ${meta.author}` };
+    case ActivityType.GITHUB_PR_MERGED:
+      return { title: `${actorName} merged PR #${meta.prNumber} '${meta.prTitle}' on GitHub` };
     default:
       return { title: `${actorName} updated this issue` };
   }

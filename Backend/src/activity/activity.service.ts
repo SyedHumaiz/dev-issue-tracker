@@ -36,6 +36,39 @@ export class ActivityService {
     return { items: page, hasMore: items.length > limit, nextCursor: items.length > limit && last ? this.encodeCursor(last.createdAt, last.id) : null };
   }
 
+  async findByProject(projectId: string, userId: string, cursor?: string, limitValue?: string) {
+    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) throw new NotFoundException(`Project with ID ${projectId} not found`);
+
+    await this.requireProjectMember(projectId, userId);
+
+    const limit = Math.min(Math.max(Number(limitValue) || 20, 1), 50);
+    const cursorValue = this.decodeCursor(cursor);
+    const items = await this.prisma.activity.findMany({
+      where: {
+        projectId,
+        ...(cursorValue
+          ? {
+              OR: [
+                { createdAt: { lt: cursorValue.createdAt } },
+                { createdAt: cursorValue.createdAt, id: { lt: cursorValue.id } },
+              ],
+            }
+          : {}),
+      },
+      include: { actor: { select: { id: true, name: true, avatarUrl: true } } },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+    const page = items.slice(0, limit);
+    const last = page.at(-1);
+    return {
+      items: page,
+      hasMore: items.length > limit,
+      nextCursor: items.length > limit && last ? this.encodeCursor(last.createdAt, last.id) : null,
+    };
+  }
+
   private decodeCursor(cursor?: string) {
     if (!cursor) return undefined;
     try {

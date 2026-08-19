@@ -10,6 +10,7 @@ web-build/
 # Environment & local secrets
 .env
 .env*.local
+/Backend/keys/
 
 # Expo & Mobile
 .expo/

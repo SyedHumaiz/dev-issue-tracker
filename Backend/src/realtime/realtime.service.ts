@@ -107,4 +107,8 @@ export class RealtimeService {
       activity,
     });
   }
+
+  emitProjectActivityCreated(projectId: string, activity: Record<string, unknown>) {
+    this.emitToProject(projectId, 'project.activity_created', { projectId, activity });
+  }
 }

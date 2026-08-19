@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useProject, useProjectStats, useCreateIssue, useAddMember, useSearchUsers, useIssues, useUpdateStatus, useUpdateMemberRole, useRemoveMember, useUpdateProject } from '@/src/api/hooks';
+import { useProject, useProjectStats, useCreateIssue, useAddMember, useSearchUsers, useIssues, useUpdateStatus, useUpdateMemberRole, useRemoveMember, useUpdateProject, useGithubRepos, useProjectActivity } from '@/src/api/hooks';
 import { useAuthStore } from '@/src/store/useAuthStore';
-import { IssueListItem, IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
+import { Activity, IssueListItem, IssueStatus, Priority, Role, UserSearchResult } from '@/src/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDebounce } from '@/src/utils/useDebounce';
 import { getErrorMessage } from '@/src/utils/error';
@@ -13,6 +13,7 @@ import { useProjectRoom } from '@/src/hooks/useRealtime';
 import { EmptyState } from '@/src/components/EmptyState';
 import { SwipeableTabView } from '@/src/components/SwipeableTabView';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { formatActivity, formatRelativeTime } from '@/src/utils/activity';
 
 function SwipeableIssueRow({ issue, onPress }: { issue: IssueListItem; onPress: () => void }) {
   const swipeableRef = useRef<Swipeable>(null);
@@ -63,14 +64,17 @@ export default function ProjectDetailsScreen() {
   const addMember = useAddMember(id);
   const currentUser = useAuthStore((state) => state.user);
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'issues' | 'members'>('overview');
-  const projectTabs = ['overview', 'issues', 'members'] as const;
+  const [activeTab, setActiveTab] = useState<'overview' | 'issues' | 'activity' | 'members'>('overview');
+  const projectTabs = ['overview', 'issues', 'activity', 'members'] as const;
   const { data: stats, isLoading: isStatsLoading } = useProjectStats(id);
   const updateMemberRole = useUpdateMemberRole(id);
   const removeMember = useRemoveMember(id);
   const updateProject = useUpdateProject(id);
   const [projectName, setProjectName] = useState('');
   const [isEditingSettings, setIsEditingSettings] = useState(false);
+  const [isLinkingGithubRepo, setIsLinkingGithubRepo] = useState(false);
+  const githubRepos = useGithubRepos(isLinkingGithubRepo);
+  const projectActivity = useProjectActivity(id);
   
   // Issue Creation State
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
@@ -189,6 +193,15 @@ export default function ProjectDetailsScreen() {
     ]);
   };
 
+  const handleLinkGithubRepo = async (fullName: string) => {
+    try {
+      await updateProject.mutateAsync({ githubRepoFullName: fullName });
+      setIsLinkingGithubRepo(false);
+    } catch (err) {
+      Alert.alert('Could not link repository', getErrorMessage(err));
+    }
+  };
+
   const handleClearSelection = () => {
     setSelectedUser(null);
     setSearchQuery('');
@@ -226,6 +239,24 @@ export default function ProjectDetailsScreen() {
     </View>
   );
 
+  const activityItems = projectActivity.data?.pages.flatMap((page) => page.items) ?? [];
+  const renderProjectActivity = ({ item }: { item: Activity }) => {
+    const description = formatActivity(item);
+    const actorName = item.actor?.name ?? (typeof item.meta.author === 'string' ? item.meta.author : 'GitHub');
+    return (
+      <View className="mb-4 flex-row items-start">
+        <View className="mr-3 mt-1 h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
+          <Text className="text-xs font-bold text-slate-600 dark:text-slate-300">{actorName.charAt(0).toUpperCase()}</Text>
+        </View>
+        <View className="flex-1 rounded-lg border border-border bg-surface p-3 dark:border-border-dark dark:bg-surface-dark">
+          <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{description.title}</Text>
+          {description.detail && <Text className="mt-1 text-sm text-muted dark:text-muted-dark">{description.detail}</Text>}
+          <Text className="mt-1 text-xs text-muted dark:text-muted-dark">{formatRelativeTime(item.createdAt)}</Text>
+        </View>
+      </View>
+    );
+  };
+
   // Whether to show the search results dropdown
   const showSearchResults = !selectedUser && debouncedQuery.trim().length >= 2;
 
@@ -236,7 +267,7 @@ export default function ProjectDetailsScreen() {
           <Text className="text-2xl font-semibold text-foreground dark:text-foreground-dark">{project.name}</Text>
           <Text className="mt-1 text-sm text-muted dark:text-muted-dark">{project.issues.length} issues · {project.members.length} members</Text>
         </View>
-        <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'issues', label: 'Issues' }, { value: 'members', label: 'Members' }]} />
+        <SegmentedTabs value={activeTab} onChange={setActiveTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'issues', label: 'Issues' }, { value: 'activity', label: 'Activity' }, { value: 'members', label: 'Members' }]} />
       </View>
 
       <SwipeableTabView activeIndex={projectTabs.indexOf(activeTab)} tabCount={projectTabs.length} onChange={(index) => setActiveTab(projectTabs[index]!)}>
@@ -255,6 +286,13 @@ export default function ProjectDetailsScreen() {
             <View className="mt-5 rounded-xl border border-border bg-surface p-4 dark:border-border-dark dark:bg-surface-dark">
               <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">Project settings</Text>
               {isEditingSettings ? <><TextInput className="mt-3 rounded-lg border border-border bg-slate-50 px-3 py-2 text-foreground dark:border-border-dark dark:bg-slate-800 dark:text-foreground-dark" value={projectName} onChangeText={setProjectName} /><View className="mt-3 flex-row justify-end gap-3"><TouchableOpacity onPress={() => setIsEditingSettings(false)}><Text className="text-muted">Cancel</Text></TouchableOpacity><TouchableOpacity onPress={handleSaveSettings}><Text className="font-semibold text-blue-600">Save</Text></TouchableOpacity></View></> : <TouchableOpacity className="mt-3" onPress={() => { setProjectName(project.name); setIsEditingSettings(true); }}><Text className="font-semibold text-blue-600">Edit project name</Text></TouchableOpacity>}
+              {isLinkingGithubRepo ? (
+                <View className="mt-4 border-t border-border pt-4 dark:border-border-dark">
+                  <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">Choose a GitHub repository</Text>
+                  {githubRepos.isLoading ? <ActivityIndicator className="mt-3" color="#2563eb" /> : githubRepos.isError ? <Text className="mt-2 text-sm text-red-500">Could not load repositories. Connect GitHub from your profile and try again.</Text> : githubRepos.data?.length ? githubRepos.data.map((repo) => <TouchableOpacity key={repo.id} className="mt-2 rounded-lg border border-border px-3 py-2 dark:border-border-dark" onPress={() => handleLinkGithubRepo(repo.fullName)} disabled={updateProject.isPending}><Text className="font-medium text-blue-600">{repo.fullName}</Text><Text className="mt-1 text-xs text-muted dark:text-muted-dark">{repo.private ? 'Private' : 'Public'} repository</Text></TouchableOpacity>) : <Text className="mt-2 text-sm text-muted dark:text-muted-dark">No accessible repositories found.</Text>}
+                  <TouchableOpacity className="mt-3" onPress={() => setIsLinkingGithubRepo(false)}><Text className="font-semibold text-muted">Cancel</Text></TouchableOpacity>
+                </View>
+              ) : <TouchableOpacity className="mt-4 border-t border-border pt-4 dark:border-border-dark" onPress={() => setIsLinkingGithubRepo(true)}><Text className="font-semibold text-blue-600">{project.githubRepoFullName ? 'Change GitHub repo' : 'Link GitHub repo'}</Text>{project.githubRepoFullName && <Text className="mt-1 text-xs text-muted dark:text-muted-dark">Currently linked: {project.githubRepoFullName}</Text>}</TouchableOpacity>}
               <TouchableOpacity className="mt-4 border-t border-border pt-4 dark:border-border-dark" onPress={handleArchive}><Text className="font-semibold text-red-600">Archive project</Text></TouchableOpacity>
             </View>
           )}
@@ -327,6 +365,21 @@ export default function ProjectDetailsScreen() {
             keyExtractor={(item) => item.id}
             renderItem={renderIssue}
             ListEmptyComponent={isIssuesLoading ? <View className="items-center py-12"><ActivityIndicator size="large" color="#2563eb" /><Text className="mt-3 text-sm text-muted dark:text-muted-dark">Loading issues…</Text></View> : <EmptyState icon="assignment" title="No issues yet" subtitle="Create the first issue to get started" iconColor="#2563eb" iconContainerClassName="bg-blue-50 dark:bg-blue-950" />}
+          />
+        </View>
+      )}
+
+      {activeTab === 'activity' && (
+        <View className="flex-1 p-4">
+          <FlatList
+            data={activityItems}
+            keyExtractor={(item) => item.id}
+            renderItem={renderProjectActivity}
+            contentContainerStyle={{ paddingBottom: 16, flexGrow: 1 }}
+            onEndReached={() => { if (projectActivity.hasNextPage && !projectActivity.isFetchingNextPage) projectActivity.fetchNextPage(); }}
+            onEndReachedThreshold={0.6}
+            ListEmptyComponent={projectActivity.isLoading ? <View className="items-center py-10"><ActivityIndicator color="#2563eb" /></View> : projectActivity.isError ? <TouchableOpacity className="items-center py-10" onPress={() => projectActivity.refetch()}><Text className="text-sm font-semibold text-blue-600">Could not load activity. Tap to retry.</Text></TouchableOpacity> : <EmptyState compact icon="history" title="No activity yet" subtitle="GitHub pull request updates will appear here" iconColor="#64748b" iconContainerClassName="bg-slate-100 dark:bg-slate-800" />}
+            ListFooterComponent={projectActivity.isFetchingNextPage ? <View className="py-4"><ActivityIndicator color="#2563eb" size="small" /></View> : null}
           />
         </View>
       )}

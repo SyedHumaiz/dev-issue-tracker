@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { GithubModule } from './github/github.module';
+import { GithubWebhooksModule } from './github-webhooks/github-webhooks.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GithubModule } from './github/github.module';
     ActivityModule,
     NotificationsModule,
     GithubModule,
+    GithubWebhooksModule,
   ],
 })
 export class AppModule {}

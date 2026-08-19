@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateProjectDto {
   @IsString()
@@ -9,4 +9,10 @@ export class UpdateProjectDto {
   @IsBoolean()
   @IsOptional()
   isArchived?: boolean;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(255)
+  @IsOptional()
+  githubRepoFullName?: string;
 }

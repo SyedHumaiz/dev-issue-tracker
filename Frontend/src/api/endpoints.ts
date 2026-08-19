@@ -29,6 +29,8 @@ import {
   GithubStatus,
   GithubRepo,
   GithubPull,
+  GithubPullDetail,
+  MergeMethod,
 } from '@/src/types';
 
 // ── Auth ──
@@ -60,6 +62,10 @@ export const githubApi = {
   repos: () => apiClient.get<GithubRepo[]>('/github/repos'),
   pulls: (owner: string, repo: string) =>
     apiClient.get<GithubPull[]>(`/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls`),
+  pullDetail: (owner: string, repo: string, number: number) =>
+    apiClient.get<GithubPullDetail>(`/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls/${number}`),
+  mergePull: (owner: string, repo: string, number: number, mergeMethod: MergeMethod) =>
+    apiClient.put<{ merged: boolean; sha: string; message: string }>(`/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls/${number}/merge`, { mergeMethod }),
 };
 
 // ── Projects ──
@@ -124,6 +130,8 @@ export const commentsApi = {
 export const activityApi = {
   list: (issueId: string, cursor?: string) =>
     apiClient.get<CursorPage<Activity>>(`/issues/${issueId}/activity`, { params: { limit: 20, ...(cursor ? { cursor } : {}) } }),
+  listProject: (projectId: string, cursor?: string) =>
+    apiClient.get<CursorPage<Activity>>(`/projects/${projectId}/activity`, { params: { limit: 20, ...(cursor ? { cursor } : {}) } }),
 };
 
 export const notificationsApi = {

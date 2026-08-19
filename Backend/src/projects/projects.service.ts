@@ -28,8 +28,9 @@ export class ProjectsService {
     }
   }
 
-  // Throws 403 if the user is not an OWNER of the project
-  private async requireOwner(projectId: string, actorId: string): Promise<void> {
+  // Throws 403 if the user is not an OWNER of the project.
+  // Shared by project-management actions and GitHub merge authorization.
+  async requireOwner(projectId: string, actorId: string, action = 'perform this action'): Promise<void> {
     const membership = await this.prisma.projectMember.findUnique({
       where: { userId_projectId: { userId: actorId, projectId } },
     });
@@ -37,7 +38,7 @@ export class ProjectsService {
       throw new ForbiddenException('You are not a member of this project');
     }
     if (membership.role !== Role.OWNER) {
-      throw new ForbiddenException('Only project owners can perform this action');
+      throw new ForbiddenException(`Only project owners can ${action}`);
     }
   }
 
@@ -149,6 +150,9 @@ export class ProjectsService {
       data: {
         ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
         ...(dto.isArchived !== undefined ? { isArchived: dto.isArchived } : {}),
+        ...(dto.githubRepoFullName !== undefined
+          ? { githubRepoFullName: dto.githubRepoFullName.trim().toLowerCase() }
+          : {}),
       },
     });
   }

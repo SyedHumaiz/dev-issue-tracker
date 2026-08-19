@@ -117,6 +117,7 @@ class SocketService {
       'issue.priority_changed',
       'issue.assignee_changed',
       'comment.added',
+      'project.activity_created',
       'notification.created',
     ] as const;
 

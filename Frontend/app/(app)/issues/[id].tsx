@@ -142,7 +142,7 @@ export default function IssueDetailsScreen() {
     return (
       <View className="mb-4 flex-row items-start">
         <View className="mr-3 mt-1 h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-          <Text className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.actor.name.charAt(0).toUpperCase()}</Text>
+          <Text className="text-xs font-bold text-slate-600 dark:text-slate-300">{(item.actor?.name ?? 'GitHub').charAt(0).toUpperCase()}</Text>
         </View>
         <View className="flex-1 rounded-lg border border-border bg-surface p-3 dark:border-border-dark dark:bg-surface-dark">
           <Text className="text-sm font-medium text-foreground dark:text-foreground-dark">{description.title}</Text>

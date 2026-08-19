@@ -31,6 +31,11 @@ enum ActivityType {
   PRIORITY_CHANGED
   ASSIGNEE_CHANGED
   COMMENT_ADDED
+  GITHUB_PR_OPENED
+  GITHUB_PR_CLOSED
+  GITHUB_PR_REOPENED
+  GITHUB_PR_REVIEW_REQUESTED
+  GITHUB_PR_MERGED
 }
 
 enum NotificationType {
@@ -40,6 +45,11 @@ enum NotificationType {
   STATUS_CHANGED
   PRIORITY_CHANGED
   PROJECT_INVITED
+  GITHUB_PR_OPENED
+  GITHUB_PR_CLOSED
+  GITHUB_PR_REOPENED
+  GITHUB_PR_REVIEW_REQUESTED
+  GITHUB_PR_MERGED
 }
 
 model User {
@@ -69,12 +79,14 @@ model User {
 }
 
 model Project {
-  id        String          @id @default(cuid())
-  name      String
-  isArchived Boolean         @default(false)
-  createdAt DateTime        @default(now())
-  members   ProjectMember[]
-  issues    Issue[]
+  id                 String          @id @default(cuid())
+  name               String
+  isArchived         Boolean         @default(false)
+  githubRepoFullName String?         @unique
+  createdAt          DateTime        @default(now())
+  members            ProjectMember[]
+  issues             Issue[]
+  activities         Activity[]
   notifications Notification[]
 }
 
@@ -129,12 +141,15 @@ model Activity {
   type      ActivityType
   meta      Json
   createdAt DateTime     @default(now())
-  issueId   String
-  issue     Issue        @relation(fields: [issueId], references: [id])
-  actorId   String
-  actor     User         @relation(fields: [actorId], references: [id])
+  issueId   String?
+  issue     Issue?       @relation(fields: [issueId], references: [id])
+  projectId String?
+  project   Project?     @relation(fields: [projectId], references: [id])
+  actorId   String?
+  actor     User?        @relation(fields: [actorId], references: [id])
 
   @@index([issueId, createdAt, id])
+  @@index([projectId, createdAt, id])
 }
 
 model Notification {

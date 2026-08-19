@@ -4,6 +4,7 @@ import {
   RealtimeCommentAddedPayload,
   RealtimeIssueChangedPayload,
   RealtimeIssueCreatedPayload,
+  RealtimeProjectActivityCreatedPayload,
 } from '@/src/api/realtime.types';
 import {
   Activity,
@@ -241,6 +242,10 @@ function handleNotificationCreated(queryClient: QueryClient, payload: Notificati
   }));
 }
 
+function handleProjectActivityCreated(queryClient: QueryClient, payload: RealtimeProjectActivityCreatedPayload) {
+  prependPaginatedItem(queryClient, queryKeys.projectActivity(payload.projectId), payload.activity);
+}
+
 export function applyRealtimeEvent(
   queryClient: QueryClient,
   event: string,
@@ -258,6 +263,9 @@ export function applyRealtimeEvent(
       break;
     case 'comment.added':
       handleCommentAdded(queryClient, payload as RealtimeCommentAddedPayload, currentUserId);
+      break;
+    case 'project.activity_created':
+      handleProjectActivityCreated(queryClient, payload as RealtimeProjectActivityCreatedPayload);
       break;
     case 'notification.created':
       handleNotificationCreated(queryClient, payload as Notification);

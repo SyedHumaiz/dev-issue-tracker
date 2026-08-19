@@ -23,6 +23,11 @@ export enum ActivityType {
   PRIORITY_CHANGED = 'PRIORITY_CHANGED',
   ASSIGNEE_CHANGED = 'ASSIGNEE_CHANGED',
   COMMENT_ADDED = 'COMMENT_ADDED',
+  GITHUB_PR_OPENED = 'GITHUB_PR_OPENED',
+  GITHUB_PR_CLOSED = 'GITHUB_PR_CLOSED',
+  GITHUB_PR_REOPENED = 'GITHUB_PR_REOPENED',
+  GITHUB_PR_REVIEW_REQUESTED = 'GITHUB_PR_REVIEW_REQUESTED',
+  GITHUB_PR_MERGED = 'GITHUB_PR_MERGED',
 }
 
 // ── User ──
@@ -90,6 +95,7 @@ export interface ProjectListItem {
   id: string;
   name: string;
   isArchived: boolean;
+  githubRepoFullName: string | null;
   createdAt: string;
   members: ProjectMember[];
   _count: {
@@ -119,6 +125,7 @@ export interface ProjectDetail {
   id: string;
   name: string;
   isArchived: boolean;
+  githubRepoFullName: string | null;
   createdAt: string;
   members: ProjectMember[];
   issues: ProjectIssue[];
@@ -185,9 +192,10 @@ export interface Activity {
   type: ActivityType;
   meta: Record<string, any>;
   createdAt: string;
-  issueId: string;
-  actorId: string;
-  actor: UserSummary;
+  issueId: string | null;
+  projectId: string | null;
+  actorId: string | null;
+  actor: UserSummary | null;
 }
 
 export interface CursorPage<T> {
@@ -238,6 +246,7 @@ export interface UpdateMemberRoleRequest {
 export interface UpdateProjectRequest {
   name?: string;
   isArchived?: boolean;
+  githubRepoFullName?: string;
 }
 
 export interface CreateIssueRequest {
@@ -297,6 +306,15 @@ export interface GithubPull {
   updatedAt: string;
 }
 
+export type MergeMethod = 'merge' | 'squash' | 'rebase';
+
+export interface GithubPullDetail extends GithubPull {
+  mergeable: boolean | null;
+  mergeableState: string;
+  merged: boolean;
+  baseBranch: string;
+}
+
 export interface IssueFilter {
   projectId?: string;
   status?: IssueStatus;
@@ -311,7 +329,12 @@ export type NotificationType =
   | 'MENTIONED'
   | 'STATUS_CHANGED'
   | 'PRIORITY_CHANGED'
-  | 'PROJECT_INVITED';
+  | 'PROJECT_INVITED'
+  | 'GITHUB_PR_OPENED'
+  | 'GITHUB_PR_CLOSED'
+  | 'GITHUB_PR_REOPENED'
+  | 'GITHUB_PR_REVIEW_REQUESTED'
+  | 'GITHUB_PR_MERGED';
 
 export interface Notification {
   id: string;

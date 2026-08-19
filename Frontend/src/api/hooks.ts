@@ -12,6 +12,7 @@ import {
   IssueFilter,
   UpdateProfileRequest,
   UpdateProjectRequest,
+  MergeMethod,
 } from '@/src/types';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { queryKeys } from '@/src/api/queryKeys';
@@ -49,10 +50,11 @@ export function useGithubStatus() {
   });
 }
 
-export function useGithubRepos() {
+export function useGithubRepos(enabled = true) {
   return useQuery({
     queryKey: queryKeys.githubRepos,
     queryFn: () => githubApi.repos().then((res) => res.data),
+    enabled,
   });
 }
 
@@ -61,6 +63,28 @@ export function useGithubPulls(owner: string, repo: string) {
     queryKey: queryKeys.githubPulls(owner, repo),
     queryFn: () => githubApi.pulls(owner, repo).then((res) => res.data),
     enabled: Boolean(owner && repo),
+  });
+}
+
+export function useGithubPullDetail(owner: string, repo: string, number: number) {
+  return useQuery({
+    queryKey: queryKeys.githubPullDetail(owner, repo, number),
+    queryFn: () => githubApi.pullDetail(owner, repo, number).then((res) => res.data),
+    enabled: Boolean(owner && repo && number),
+    staleTime: 15_000,
+    refetchInterval: 10_000,
+  });
+}
+
+export function useMergeGithubPull(owner: string, repo: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ number, mergeMethod }: { number: number; mergeMethod: MergeMethod }) =>
+      githubApi.mergePull(owner, repo, number, mergeMethod).then((res) => res.data),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: queryKeys.githubPulls(owner, repo) });
+      qc.invalidateQueries({ queryKey: queryKeys.githubPullDetail(owner, repo, variables.number) });
+    },
   });
 }
 
@@ -246,6 +270,16 @@ export function useActivity(issueId: string) {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: !!issueId,
+  });
+}
+
+export function useProjectActivity(projectId: string) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.projectActivity(projectId),
+    queryFn: ({ pageParam }) => activityApi.listProject(projectId, pageParam).then((res) => res.data),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    enabled: !!projectId,
   });
 }
 
